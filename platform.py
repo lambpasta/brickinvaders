@@ -1,6 +1,6 @@
 import pygame
 import os
-import random
+from globalvars import SCREEN_HEIGHT, SCREEN_WIDTH, FRAME_RATE
 
 class Platform(pygame.sprite.Sprite):
 
