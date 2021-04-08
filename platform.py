@@ -7,10 +7,10 @@ class Platform(pygame.sprite.Sprite):
     def __init__(self, x, y):
         super().__init__()
 
-        self.length = 150
+        self.defaultwidth = 150
 
         self.og_image = pygame.image.load("assets/platform.png").convert_alpha()
-        self.image = pygame.transform.scale(self.og_image, (self.length, 20))
+        self.image = pygame.transform.scale(self.og_image, (self.defaultwidth, 20))
         self.rect = self.image.get_rect()
 
         self.rect.x = x
@@ -21,28 +21,45 @@ class Platform(pygame.sprite.Sprite):
 
         self.accel = 1
         self.hasmoved = False
+
+        self.growcooldown = 0
+        self.speedcooldown = 0
     
     def move(self, xchange, ychange):
         self.rect.x += xchange
         self.rect.y += ychange
 
     def xcenter(self):
-        return self.rect.x + (self.length/2)
+        return self.rect.x + (self.rect.width/2)
 
-    def lenscale(self, lengthchange):
-        self.length += lengthchange
-        self.image = pygame.transform.scale(self.og_image, ((self.length), 20))
+    def lenset(self, length):
+        tempxcenter = self.rect.centerx
+        self.image = pygame.transform.scale(self.og_image, ((length), 20))
         self.rect.height = self.image.get_height()
         self.rect.width = self.image.get_width()
-        self.rect.x += -1*(lengthchange/2)
+        self.rect.centerx = tempxcenter
 
     def reset(self):
-        self.rect.x = 500 - (self.length/2)
+        self.rect.x = 500 - (self.defaultwidth/2)
         self.rect.y = 630
         self.maxspd = 10
         self.speed = 0
+        self.lenset(self.defaultwidth)
     
     def update(self, keys_pressed):
+        
+
+        if self.growcooldown > 0:
+            self.growcooldown -= 1
+            if self.growcooldown == 0:
+                self.lenset(150)
+        if self.speedcooldown > 0:
+            self.speedcooldown -= 1
+            if self.speedcooldown == 0:
+                self.accel = 1
+                self.speed /= 2
+                self.maxspeed = 10
+        
         self.hasmoved = False
         # if not left and right keys at once
         if not ((keys_pressed[pygame.K_LEFT] or keys_pressed[pygame.K_a]) and (keys_pressed[pygame.K_RIGHT] or keys_pressed[pygame.K_d])):
@@ -66,5 +83,5 @@ class Platform(pygame.sprite.Sprite):
                     self.speed -= self.accel
         if self.rect.x > 0 and self.speed < 0:
             self.move(self.speed, 0)
-        if self.rect.x + self.length < SCREEN_WIDTH and self.speed > 0:
+        if self.rect.x + self.rect.width < SCREEN_WIDTH and self.speed > 0:
             self.move(self.speed, 0)

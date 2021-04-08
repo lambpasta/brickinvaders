@@ -6,7 +6,7 @@ from globalvars import SCREEN_HEIGHT, SCREEN_WIDTH, FRAME_RATE
 
 
 balls = pygame.sprite.Group()
-immortal = False
+immortal = True
 
 class Ball(pygame.sprite.Sprite):
 
@@ -81,7 +81,7 @@ class Ball(pygame.sprite.Sprite):
     def horizontalbounce(self):
         self.angle = (180 - self.angle) + 180
     
-    def update(self, platform, platforms, enemies, hasmoved):
+    def update(self, platform, platforms, enemies, hasmoved, Powerup):
 
         if hasmoved: 
             self.velocity = 10
@@ -96,7 +96,7 @@ class Ball(pygame.sprite.Sprite):
 
         if pygame.sprite.spritecollide(self, platforms, False):
             self.horizontalbounce()
-            ballpospercent = ((self.xcenter() - platform.rect.x)/platform.length)*100
+            ballpospercent = ((self.xcenter() - platform.rect.x)/platform.rect.width)*100
             self.angle -= (ballpospercent - 50)/3
 
         
@@ -112,6 +112,8 @@ class Ball(pygame.sprite.Sprite):
             else:
                 self.verticalbounce()
             enemies.remove(enemy)
+            Powerup.addpowerup(enemy.rect.x, enemy.rect.y, 40, randrange(1, 3))
+
 
         for ball in balls:
             if ball.rect.y > SCREEN_HEIGHT:

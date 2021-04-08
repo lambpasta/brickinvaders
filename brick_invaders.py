@@ -40,10 +40,14 @@ platform.reset()
 Enemy.spawnenemies(50, 50, 10, 10)
 
 # spawn and layout all balls
-Ball.spawnballs(1, 20, platform.xcenter(), 628)
+ballcount = 1
+ballsize = 20
+ballspawny = 628
+Ball.spawnballs(ballcount, ballsize, platform.xcenter(), ballspawny)
 
-# (temp) make a powerup
-Powerup.addpowerup(480, 30, 40, "grow")
+# # (temp) make a powerup
+# Powerup.addpowerup(480, 30, 40, 1)
+# Powerup.addpowerup(600, 30, 40, 2)
 
 # main game loop
 while True:
@@ -66,8 +70,7 @@ while True:
     if len(balls) < 1 and (184 <= mousex <= 820) and (360 <= mousey <= 424) and mouse_buttons[0]:
         platform.reset()
         click.play()
-        for i in range(ballcount):
-            addball(platform.xcenter(), 628 - ballsize, ballsize)
+        Ball.spawnballs(ballcount, ballsize, platform.xcenter(), ballspawny)
 
 
     """
@@ -75,7 +78,7 @@ while True:
     """
 
     platform.update(keys_pressed)
-    balls.update(platform, platforms, enemies, platform.hasmoved)
+    balls.update(platform, platforms, enemies, platform.hasmoved, Powerup)
     powerups.update(platforms)
 
     """
