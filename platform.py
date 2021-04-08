@@ -32,6 +32,8 @@ class Platform(pygame.sprite.Sprite):
     def lenscale(self, lengthchange):
         self.length += lengthchange
         self.image = pygame.transform.scale(self.og_image, ((self.length), 20))
+        self.rect.height = self.image.get_height()
+        self.rect.width = self.image.get_width()
         self.rect.x += -1*(lengthchange/2)
 
     def reset(self):

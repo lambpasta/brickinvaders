@@ -6,14 +6,15 @@ powerups = pygame.sprite.Group()
 
 class Powerup(pygame.sprite.Sprite):
 
-    def __init__(self, x, y, size):
+    def __init__(self, x, y, size, power):
         super().__init__()
 
         self.size = size
 
-        og_mushroom = pygame.image.load("assets/mushroom.png").convert_alpha()
-        self.image = pygame.transform.scale(og_mushroom, (self.size, self.size))
-        self.rect = self.image.get_rect()
+        if power == "grow":
+            og_mushroom = pygame.image.load("assets/mushroom.png").convert_alpha()
+            self.image = pygame.transform.scale(og_mushroom, (self.size, self.size))
+            self.rect = self.image.get_rect()
 
 
         self.realx = x
@@ -27,8 +28,8 @@ class Powerup(pygame.sprite.Sprite):
         self.rect.x = int(self.realx)
         self.rect.y = int(self.realy)
     
-    def addpowerup(x, y, size):
-        powerups.add(Powerup(x, y, size))
+    def addpowerup(x, y, size, power):
+        powerups.add(Powerup(x, y, size, power))
 
     def xcenter(self):
         return self.rect.x + (self.size/2)

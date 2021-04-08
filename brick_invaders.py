@@ -28,19 +28,6 @@ bg = pygame.transform.scale(og_bg, (SCREEN_WIDTH, SCREEN_HEIGHT))
 youdied = pygame.image.load("assets/youdied.png")
 youdiedscaled = pygame.transform.scale(youdied, (SCREEN_WIDTH, SCREEN_HEIGHT))
 
-# define useful functions for the game
-
-def addenemy(x, y, size):
-    enemies.add(Enemy(x, y, size))
-
-def resetballs():
-    for ball in balls:
-        ball.realx = 500 - (ball.size/2)
-        ball.realy = 628 - ball.size
-        ball.velocity = 0
-        ball.angle = random()*90+45
-        ball.size = 20
-
 # create the platform object and add it to a group for convenience
 platform = Platform(500, 630)
 platforms = pygame.sprite.Group()
@@ -50,25 +37,13 @@ platforms.add(platform)
 platform.reset()
 
 # spawn and layout all enemies
-enemycount = 50
-enemysize = 50
-enemyxspacing = 10 + enemysize
-enemyyspacing = 10 + enemysize
-enemycontainer = SCREEN_WIDTH - enemysize
-for i in range(enemycount):
-    x = ((enemyxspacing)*i) % enemycontainer
-    y = (enemyyspacing)*(1 + floor((enemyxspacing)*i/enemycontainer))
-    addenemy(x, y, enemysize)
+Enemy.spawnenemies(50, 50, 10, 10)
 
 # spawn and layout all balls
-ballcount = 1
-ballsize = 20
-for i in range(ballcount):
-    Ball.addball(platform.xcenter(), 628 - ballsize, ballsize)
+Ball.spawnballs(1, 20, platform.xcenter(), 628)
 
 # (temp) make a powerup
-powerup = Powerup(480, 30, 40)
-powerups.add(powerup)
+Powerup.addpowerup(480, 30, 40, "grow")
 
 # main game loop
 while True:

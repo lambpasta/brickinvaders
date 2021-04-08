@@ -1,6 +1,7 @@
 import pygame
 import os
 from globalvars import SCREEN_HEIGHT, SCREEN_WIDTH, FRAME_RATE
+from math import floor
 
 enemies = pygame.sprite.Group()
 
@@ -27,6 +28,18 @@ class Enemy(pygame.sprite.Sprite):
         self.realy += ychange
         self.rect.x = int(self.realx)
         self.rect.y = int(self.realy)
+
+    def addenemy(x, y, size):
+        enemies.add(Enemy(x, y, size))
+
+    def spawnenemies(count, size, xspacing, yspacing):
+        enemyxspacing = xspacing + size
+        enemyyspacing = yspacing + size
+        enemycontainer = SCREEN_WIDTH - size
+        for i in range(count):
+            x = ((enemyxspacing)*i) % enemycontainer
+            y = (enemyyspacing)*(1 + floor((enemyxspacing)*i/enemycontainer))
+            Enemy.addenemy(x, y, size)
 
     def xcenter(self):
         return self.rect.x + (self.size/2)

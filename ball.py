@@ -37,6 +37,10 @@ class Ball(pygame.sprite.Sprite):
 
     def addball(xcenter, ycenter, size):
         balls.add(Ball(xcenter, ycenter, size, 0, randrange(0, 900)/10+45))
+    
+    def spawnballs(count, size, xcenter, y):
+        for i in range(count):
+            Ball.addball(xcenter, y - size, size)
 
     def setallballs(param, value):
         for ball in balls:
@@ -50,6 +54,14 @@ class Ball(pygame.sprite.Sprite):
                 ball.angle = value
             if param == "size":
                 ball.size = value
+    
+    def resetballs(self):
+        for ball in balls:
+            ball.realx = 500 - (ball.size/2)
+            ball.realy = 628 - ball.size
+            ball.velocity = 0
+            ball.angle = random()*90+45
+            ball.size = 20
 
     def xcenter(self):
         return self.rect.x + (self.size/2)
