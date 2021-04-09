@@ -9,8 +9,14 @@ class Platform(pygame.sprite.Sprite):
 
         self.defaultwidth = 150
 
-        self.og_image = pygame.image.load("assets/platform.png").convert_alpha()
-        self.image = pygame.transform.scale(self.og_image, (self.defaultwidth, 20))
+        self.PFnonenone = pygame.image.load("assets/platform/PFnonenone.png").convert_alpha()
+        # self.PFnonehalf = pygame.image.load("assets/platform/PFnonehalf.png").convert_alpha()
+        # self.PFnonefull = pygame.image.load("assets/platform/PFnonefull.png").convert_alpha()
+        # self.PFhalfhalf = pygame.image.load("assets/platform/PFhalfhalf.png").convert_alpha()
+        # self.PFhalffull = pygame.image.load("assets/platform/PFhalffull.png").convert_alpha()
+        # self.PFfullfull = pygame.image.load("assets/platform/PFfullfull.png").convert_alpha()
+        self.currentimg = self.PFnonenone
+        self.image = pygame.transform.scale(self.currentimg, (self.defaultwidth, 20))
         self.rect = self.image.get_rect()
 
         self.rect.x = x
@@ -32,9 +38,43 @@ class Platform(pygame.sprite.Sprite):
     def xcenter(self):
         return self.rect.x + (self.rect.width/2)
 
+    # def setblasters(self, left, right):
+    #     tempstr=""
+    #     if left == 0:
+    #         tempstr += "none"
+    #     elif left == 1:
+    #         tempstr += "half"
+    #     elif left == 2:
+    #         tempstr += "full"
+    #     if right == 0:
+    #         tempstr += "none"
+    #     elif right == 1:
+    #         tempstr += "half"
+    #     elif right == 2:
+    #         tempstr += "full"
+    #     print(tempstr)
+    #     if tempstr == "nonenone":
+    #         self.currentimg = self.PFnonenone
+    #     elif tempstr == "nonehalf":
+    #         self.currentimg = self.PFnonehalf
+    #     elif tempstr == "nonefull":
+    #         self.currentimg = self.PFnonefull
+    #     elif tempstr == "halfnone":
+    #         self.currentimg = pygame.transform.flip(self.PFnonehalf, False, True)
+    #     elif tempstr =="halfhalf":
+    #         self.currentimg = self.PFhalfhalf
+    #     elif tempstr == "halffull":
+    #         self.currentimg = self.PFhalfhalf
+    #     elif tempstr == "fullnone":
+    #         self.currentimg = pygame.transform.flip(self.PFnonefull, False, True)
+    #     elif tempstr == "fullhalf":
+    #         self.currentimg = pygame.transform.flip(self.PFhalffull, False, True)
+    #     elif tempstr == "fullfull":
+    #         self.currentimg = self.PFfullfull    
+
     def lenset(self, length):
         tempxcenter = self.rect.centerx
-        self.image = pygame.transform.scale(self.og_image, ((length), 20))
+        self.image = pygame.transform.scale(self.currentimg, ((length), 20))
         self.rect.height = self.image.get_height()
         self.rect.width = self.image.get_width()
         self.rect.centerx = tempxcenter
@@ -47,7 +87,9 @@ class Platform(pygame.sprite.Sprite):
         self.lenset(self.defaultwidth)
     
     def update(self, keys_pressed):
-        
+
+        self.image = pygame.transform.scale(self.currentimg, (self.defaultwidth, 20))
+        self.rect = self.image.get_rect()
 
         if self.growcooldown > 0:
             self.growcooldown -= 1

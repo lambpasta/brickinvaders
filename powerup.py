@@ -15,6 +15,7 @@ class Powerup(pygame.sprite.Sprite):
         # POWER VALUES:
         # 1 = grow mushroom
         # 2 = fast platform
+        # 3 = multiball
         self.power = power
 
         if self.power == 1:
@@ -23,6 +24,10 @@ class Powerup(pygame.sprite.Sprite):
             self.rect = self.image.get_rect()      
         if self.power == 2:
             og_swiftness = pygame.image.load("assets/swiftness.png").convert_alpha()
+            self.image = pygame.transform.scale(og_swiftness, (self.size, self.size))
+            self.rect = self.image.get_rect()
+        if self.power == 3:
+            og_swiftness = pygame.image.load("assets/multiball.png").convert_alpha()
             self.image = pygame.transform.scale(og_swiftness, (self.size, self.size))
             self.rect = self.image.get_rect()
             

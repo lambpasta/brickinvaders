@@ -112,7 +112,7 @@ class Ball(pygame.sprite.Sprite):
             else:
                 self.verticalbounce()
             enemies.remove(enemy)
-            Powerup.addpowerup(enemy.rect.x, enemy.rect.y, 40, randrange(1, 3))
+            Powerup.addpowerup(enemy.rect.x, enemy.rect.y, 40, randrange(1, 4))
 
 
         for ball in balls:
