@@ -33,17 +33,15 @@ platform = Platform(500, 630)
 platforms = pygame.sprite.Group()
 platforms.add(platform)
 
-# reset platform attributes
-platform.reset()
 
 # spawn and layout all enemies
 Enemy.spawnenemies(50, 50, 10, 10)
 
 # spawn and layout all balls
-ballcount = 10
+ballcount = 1
 ballsize = 20
-ballspawny = 628
-Ball.spawnballs(ballcount, ballsize, platform.rect.centerx, ballspawny)
+ballspawny = 628 - (ballsize/2)
+Ball.spawnballs(ballcount, platform.rect.centerx, ballspawny, ballsize, 0, randrange(0, 900)/10+45)
 
 # main game loop
 while True:
@@ -73,19 +71,23 @@ while True:
     UPDATE section - manipulate everything on the screen
     """
 
-    platform.update(keys_pressed)
+    platform.update()
     balls.update(platform, platforms, enemies, platform.hasmoved, Powerup)
-    powerups.update(platforms)
+    powerups.update(platforms, balls)
 
     """
     DRAW section - make everything show up on screen
     """
     screen.blit(bg, (0, 0))
 
+    # platform collision box
+    # pygame.draw.rect(screen, (255,255,255), (platform.rect.x, platform.rect.y, platform.rect.w, platform.rect.h))
+    
     enemies.draw(screen)
     balls.draw(screen)
     platforms.draw(screen)
     powerups.draw(screen)
+
 
     if len(balls) < 1:
         screen.blit(youdiedscaled, (0, 0))

@@ -1,0 +1,36 @@
+
+    randrange(0, 900)/10+45)
+    
+    def setblasters(self, left, right):
+        tempstr=""
+        if left == 0:
+            tempstr += "none"
+        elif left == 1:
+            tempstr += "half"
+        elif left == 2:
+            tempstr += "full"
+        if right == 0:
+            tempstr += "none"
+        elif right == 1:
+            tempstr += "half"
+        elif right == 2:
+            tempstr += "full"
+        print(tempstr)
+        if tempstr == "nonenone":
+            self.currentimg = self.PFnonenone
+        elif tempstr == "nonehalf":
+            self.currentimg = self.PFnonehalf
+        elif tempstr == "nonefull":
+            self.currentimg = self.PFnonefull
+        elif tempstr == "halfnone":
+            self.currentimg = pygame.transform.flip(self.PFnonehalf, True, False)
+        elif tempstr =="halfhalf":
+            self.currentimg = self.PFhalfhalf
+        elif tempstr == "halffull":
+            self.currentimg = self.PFhalfhalf
+        elif tempstr == "fullnone":
+            self.currentimg = pygame.transform.flip(self.PFnonefull, True, False)
+        elif tempstr == "fullhalf":
+            self.currentimg = pygame.transform.flip(self.PFhalffull, True, False)
+        elif tempstr == "fullfull":
+            self.currentimg = self.PFfullfull   

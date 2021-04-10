@@ -8,16 +8,17 @@ class Platform(pygame.sprite.Sprite):
         super().__init__()
 
         self.defaultwidth = 150
+        self.width = 150
+        self.activeheight = round(self.defaultwidth/92*9)
 
         self.PFnonenone = pygame.image.load("assets/platform/PFnonenone.png").convert_alpha()
-        # self.PFnonehalf = pygame.image.load("assets/platform/PFnonehalf.png").convert_alpha()
-        # self.PFnonefull = pygame.image.load("assets/platform/PFnonefull.png").convert_alpha()
-        # self.PFhalfhalf = pygame.image.load("assets/platform/PFhalfhalf.png").convert_alpha()
-        # self.PFhalffull = pygame.image.load("assets/platform/PFhalffull.png").convert_alpha()
-        # self.PFfullfull = pygame.image.load("assets/platform/PFfullfull.png").convert_alpha()
+        self.PFnonehalf = pygame.image.load("assets/platform/PFnonehalf.png").convert_alpha()
+        self.PFnonefull = pygame.image.load("assets/platform/PFnonefull.png").convert_alpha()
         self.currentimg = self.PFnonenone
-        self.image = pygame.transform.scale(self.currentimg, (self.defaultwidth, 20))
+        self.image = pygame.transform.scale(self.currentimg, (self.defaultwidth, self.activeheight))
         self.rect = self.image.get_rect()
+        self.rect.w = self.defaultwidth
+        self.rect.h = self.activeheight
 
         self.rect.x = x
         self.rect.y = y
@@ -35,72 +36,9 @@ class Platform(pygame.sprite.Sprite):
         self.rect.x += xchange
         self.rect.y += ychange
 
-    def xcenter(self):
-        return self.rect.x + (self.rect.width/2)
+    def runmovement(self):
 
-    # def setblasters(self, left, right):
-    #     tempstr=""
-    #     if left == 0:
-    #         tempstr += "none"
-    #     elif left == 1:
-    #         tempstr += "half"
-    #     elif left == 2:
-    #         tempstr += "full"
-    #     if right == 0:
-    #         tempstr += "none"
-    #     elif right == 1:
-    #         tempstr += "half"
-    #     elif right == 2:
-    #         tempstr += "full"
-    #     print(tempstr)
-    #     if tempstr == "nonenone":
-    #         self.currentimg = self.PFnonenone
-    #     elif tempstr == "nonehalf":
-    #         self.currentimg = self.PFnonehalf
-    #     elif tempstr == "nonefull":
-    #         self.currentimg = self.PFnonefull
-    #     elif tempstr == "halfnone":
-    #         self.currentimg = pygame.transform.flip(self.PFnonehalf, False, True)
-    #     elif tempstr =="halfhalf":
-    #         self.currentimg = self.PFhalfhalf
-    #     elif tempstr == "halffull":
-    #         self.currentimg = self.PFhalfhalf
-    #     elif tempstr == "fullnone":
-    #         self.currentimg = pygame.transform.flip(self.PFnonefull, False, True)
-    #     elif tempstr == "fullhalf":
-    #         self.currentimg = pygame.transform.flip(self.PFhalffull, False, True)
-    #     elif tempstr == "fullfull":
-    #         self.currentimg = self.PFfullfull    
-
-    def lenset(self, length):
-        tempxcenter = self.rect.centerx
-        self.image = pygame.transform.scale(self.currentimg, ((length), 20))
-        self.rect.height = self.image.get_height()
-        self.rect.width = self.image.get_width()
-        self.rect.centerx = tempxcenter
-
-    def reset(self):
-        self.rect.x = 500 - (self.defaultwidth/2)
-        self.rect.y = 630
-        self.maxspd = 10
-        self.speed = 0
-        self.lenset(self.defaultwidth)
-    
-    def update(self, keys_pressed):
-
-        self.image = pygame.transform.scale(self.currentimg, (self.defaultwidth, 20))
-        self.rect = self.image.get_rect()
-
-        if self.growcooldown > 0:
-            self.growcooldown -= 1
-            if self.growcooldown == 0:
-                self.lenset(150)
-        if self.speedcooldown > 0:
-            self.speedcooldown -= 1
-            if self.speedcooldown == 0:
-                self.accel = 1
-                self.speed /= 2
-                self.maxspeed = 10
+        keys_pressed = pygame.key.get_pressed()
         
         self.hasmoved = False
         # if not left and right keys at once
@@ -126,4 +64,61 @@ class Platform(pygame.sprite.Sprite):
         if self.rect.x > 0 and self.speed < 0:
             self.move(self.speed, 0)
         if self.rect.x + self.rect.width < SCREEN_WIDTH and self.speed > 0:
-            self.move(self.speed, 0)
+            self.move(self.speed, 0) 
+
+    def lenset(self, width):
+        self.width = width
+        self.activeheight = round(self.defaultwidth/92*9)
+        tempxcenter = self.rect.centerx
+        self.image = pygame.transform.scale(self.currentimg, (self.width, self.activeheight))
+        self.rect.h = self.image.get_height()
+        self.rect.w = self.image.get_width()
+        self.rect.centerx = tempxcenter
+
+    def reset(self):
+        self.rect.x = 500 - (self.defaultwidth/2)
+        self.rect.y = 630
+        self.maxspd = 10
+        self.speed = 0
+        self.lenset(self.defaultwidth)
+
+    def checkcooldowns(self):
+        if self.growcooldown > 0:
+            self.growcooldown -= 1
+            if self.growcooldown == 0:
+                self.lenset(self.defaultwidth)
+        if self.speedcooldown > 0:
+            self.speedcooldown -= 1
+            if self.speedcooldown == 0:
+                self.accel /= 2
+                self.speed /= 2
+                self.maxspd /= 2
+    
+    def setblasters(self):
+
+        if self.speed != 0:
+
+            if self.speed == self.maxspd:
+                self.currentimg = pygame.transform.flip(self.PFnonefull, True, False)
+            elif self.speed*-1 == self.maxspd:
+                self.currentimg = self.PFnonefull
+
+            elif self.speed > 0:
+                self.currentimg = pygame.transform.flip(self.PFnonehalf, True, False)
+            else:
+                self.currentimg = self.PFnonehalf
+
+        else:
+            self.currentimg = self.PFnonenone
+
+        self.image = pygame.transform.scale(self.currentimg, (self.width, self.activeheight))
+
+    def update(self):
+
+        self.checkcooldowns()
+        
+        keys_pressed = pygame.key.get_pressed()
+        
+        self.runmovement()
+
+        self.setblasters()

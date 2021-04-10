@@ -52,7 +52,7 @@ class Powerup(pygame.sprite.Sprite):
     def ycenter(self):
         return self.rect.y + (self.size/2)
     
-    def dopower(self, platforms):
+    def dopower(self, platforms, balls):
         if self.power == 1:
             for platform in platforms:
                 platform.lenset(200)
@@ -62,9 +62,12 @@ class Powerup(pygame.sprite.Sprite):
                 platform.maxspd = 20
                 platform.accel = 2
                 platform.speedcooldown = 1000
+        elif self.power == 3:
+            for ball in balls:
+                ball.multiball()
 
-    def update(self, platforms):
+    def update(self, platforms, balls):
         self.move(0, 3)
         if pygame.sprite.spritecollide(self, platforms, False):
-            self.dopower(platforms)
+            self.dopower(platforms, balls)
             powerups.remove(self)
