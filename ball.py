@@ -7,6 +7,10 @@ from globalvars import SCREEN_HEIGHT, SCREEN_WIDTH, FRAME_RATE
 balls = pygame.sprite.Group()
 immortal = False
 
+def spawnballs(count, x, y, size, velocity, angle):
+    for i in range(count):
+        balls.add(Ball(x, y, size, velocity, angle))
+
 class Ball(pygame.sprite.Sprite):
 
     def __init__(self, xcenter, ycenter, size, velocity, angle):
@@ -32,10 +36,6 @@ class Ball(pygame.sprite.Sprite):
         self.realy += ychange
         self.rect.x = int(self.realx)
         self.rect.y = int(self.realy)
-    
-    def spawnballs(count, x, y, size, velocity, angle):
-        for i in range(count):
-            balls.add(Ball(x, y, size, velocity, angle))
 
     def selfspawnballs(self, count, x, y, size, velocity, angle):
         for i in range(count):
@@ -46,7 +46,7 @@ class Ball(pygame.sprite.Sprite):
             ball.realx = 500 - (ball.size/2)
             ball.realy = 628 - ball.size
             ball.velocity = 0
-            ball.angle = random()*90+45
+            ball.angle = randrange(0, 90)+45
             ball.size = 20
 
     def getx(self, angle):
