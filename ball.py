@@ -2,16 +2,15 @@ import pygame
 import os
 from math import sin, cos, radians
 from random import randrange
-from platform import Platform
 from globalvars import SCREEN_HEIGHT, SCREEN_WIDTH, FRAME_RATE
 
 
 balls = pygame.sprite.Group()
-immortal = False
+immortal = True
 
 class Ball(pygame.sprite.Sprite):
 
-    def __init__(self, xcenter, ycenter, size, velocity, angle):
+    def __init__(self, xcenter, y, size, velocity, angle):
         super().__init__()
 
         self.size = size
@@ -22,7 +21,7 @@ class Ball(pygame.sprite.Sprite):
 
 
         self.realx = xcenter - (self.size/2)
-        self.realy = ycenter - (self.size/2)
+        self.realy = y
         self.rect.x = int(self.realx)
         self.rect.y = int(self.realy)
 
@@ -35,6 +34,34 @@ class Ball(pygame.sprite.Sprite):
         self.realy += ychange
         self.rect.x = int(self.realx)
         self.rect.y = int(self.realy)
+
+    def addball(xcenter, ycenter, size):
+        balls.add(Ball(xcenter, ycenter, size, 0, randrange(0, 900)/10+45))
+    
+    def spawnballs(count, size, xcenter, y):
+        for i in range(count):
+            Ball.addball(xcenter, y - size, size)
+
+    def setallballs(param, value):
+        for ball in balls:
+            if param == "realx":
+                ball.realx = value
+            if param == "realy":
+                ball.realy = value
+            if param == "velocity":
+                ball.velocity = value
+            if param == "angle":
+                ball.angle = value
+            if param == "size":
+                ball.size = value
+    
+    def resetballs(self):
+        for ball in balls:
+            ball.realx = 500 - (ball.size/2)
+            ball.realy = 628 - ball.size
+            ball.velocity = 0
+            ball.angle = random()*90+45
+            ball.size = 20
 
     def xcenter(self):
         return self.rect.x + (self.size/2)
@@ -54,7 +81,7 @@ class Ball(pygame.sprite.Sprite):
     def horizontalbounce(self):
         self.angle = (180 - self.angle) + 180
     
-    def update(self, platform, platforms, enemies, hasmoved):
+    def update(self, platform, platforms, enemies, hasmoved, Powerup):
 
         if hasmoved: 
             self.velocity = 10
@@ -69,7 +96,7 @@ class Ball(pygame.sprite.Sprite):
 
         if pygame.sprite.spritecollide(self, platforms, False):
             self.horizontalbounce()
-            ballpospercent = ((self.xcenter() - platform.rect.x)/platform.length)*100
+            ballpospercent = ((self.xcenter() - platform.rect.x)/platform.rect.width)*100
             self.angle -= (ballpospercent - 50)/3
 
         
@@ -85,6 +112,8 @@ class Ball(pygame.sprite.Sprite):
             else:
                 self.verticalbounce()
             enemies.remove(enemy)
+            Powerup.addpowerup(enemy.rect.x, enemy.rect.y, 40, randrange(1, 4))
+
 
         for ball in balls:
             if ball.rect.y > SCREEN_HEIGHT:

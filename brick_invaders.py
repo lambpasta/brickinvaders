@@ -3,7 +3,7 @@ import os
 import pygame
 from ball import Ball, balls, immortal
 from platform import Platform
-from powerup import Powerup
+from powerup import Powerup, powerups
 from globalvars import SCREEN_HEIGHT, SCREEN_WIDTH, FRAME_RATE
 from enemy import enemies, Enemy
 from math import floor
@@ -28,37 +28,6 @@ bg = pygame.transform.scale(og_bg, (SCREEN_WIDTH, SCREEN_HEIGHT))
 youdied = pygame.image.load("assets/youdied.png")
 youdiedscaled = pygame.transform.scale(youdied, (SCREEN_WIDTH, SCREEN_HEIGHT))
 
-# define useful functions for the game
-def addball(xcenter, ycenter, size):
-    balls.add(Ball(xcenter, ycenter, size, 0, randrange(0, 900)/10+45))
-
-def addpowerup(x, y, size):
-    enemies.add(Powerup(x, y, size))
-
-def addenemy(x, y, size):
-    enemies.add(Enemy(x, y, size))
-
-def setallballs(param, value):
-    for ball in balls:
-        if param == "realx":
-            ball.realx = value
-        if param == "realy":
-            ball.realy = value
-        if param == "velocity":
-            ball.velocity = value
-        if param == "angle":
-            ball.angle = value
-        if param == "size":
-            ball.size = value
-
-def resetballs():
-    for ball in balls:
-        ball.realx = 500 - (ball.size/2)
-        ball.realy = 628 - ball.size
-        ball.velocity = 0
-        ball.angle = random()*90+45
-        ball.size = 20
-
 # create the platform object and add it to a group for convenience
 platform = Platform(500, 630)
 platforms = pygame.sprite.Group()
@@ -68,23 +37,13 @@ platforms.add(platform)
 platform.reset()
 
 # spawn and layout all enemies
-enemycount = 100
-enemysize = 50
-enemyxspacing = 10 + enemysize
-enemyyspacing = 10 + enemysize
-enemycontainer = SCREEN_WIDTH - enemysize
-for i in range(enemycount):
-    x = ((enemyxspacing)*i) % enemycontainer
-    y = (enemyyspacing)*(1 + floor((enemyxspacing)*i/enemycontainer))
-    addenemy(x, y, enemysize)
+Enemy.spawnenemies(50, 50, 10, 10)
 
 # spawn and layout all balls
-ballcount = 1
+ballcount = 10
 ballsize = 20
-for i in range(ballcount):
-    addball(platform.xcenter(), 628 - ballsize, ballsize)
-
-
+ballspawny = 628
+Ball.spawnballs(ballcount, ballsize, platform.rect.centerx, ballspawny)
 
 # main game loop
 while True:
@@ -107,8 +66,7 @@ while True:
     if len(balls) < 1 and (184 <= mousex <= 820) and (360 <= mousey <= 424) and mouse_buttons[0]:
         platform.reset()
         click.play()
-        for i in range(ballcount):
-            addball(platform.xcenter(), 628 - ballsize, ballsize)
+        Ball.spawnballs(ballcount, ballsize, platform.rect.centerx, ballspawny)
 
 
     """
@@ -116,7 +74,8 @@ while True:
     """
 
     platform.update(keys_pressed)
-    balls.update(platform, platforms, enemies, platform.hasmoved)
+    balls.update(platform, platforms, enemies, platform.hasmoved, Powerup)
+    powerups.update(platforms)
 
     """
     DRAW section - make everything show up on screen
@@ -126,6 +85,7 @@ while True:
     enemies.draw(screen)
     balls.draw(screen)
     platforms.draw(screen)
+    powerups.draw(screen)
 
     if len(balls) < 1:
         screen.blit(youdiedscaled, (0, 0))
