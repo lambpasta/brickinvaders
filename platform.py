@@ -7,18 +7,19 @@ class Platform(pygame.sprite.Sprite):
     def __init__(self, x, y):
         super().__init__()
 
-        self.defaultwidth = 150
         self.width = 150
-        self.activeheight = round(self.defaultwidth/92*9)
+        self.activeheight = round(self.width/92*9)
+
+        # image size 92 x 9#
+        # platform width 78 (centered)
+
 
         self.PFnonenone = pygame.image.load("assets/platform/PFnonenone.png").convert_alpha()
         self.PFnonehalf = pygame.image.load("assets/platform/PFnonehalf.png").convert_alpha()
         self.PFnonefull = pygame.image.load("assets/platform/PFnonefull.png").convert_alpha()
         self.currentimg = self.PFnonenone
-        self.image = pygame.transform.scale(self.currentimg, (self.defaultwidth, self.activeheight))
+        self.image = pygame.transform.scale(self.currentimg, (self.width, self.activeheight))
         self.rect = self.image.get_rect()
-        self.rect.w = self.defaultwidth
-        self.rect.h = self.activeheight
 
         self.rect.x = x
         self.rect.y = y
@@ -30,7 +31,7 @@ class Platform(pygame.sprite.Sprite):
         self.hasmoved = False
 
         self.growcooldown = 0
-        self.speedcooldown = 0
+        self.speedcooldown = 500
     
     def move(self, xchange, ychange):
         self.rect.x += xchange
@@ -39,7 +40,7 @@ class Platform(pygame.sprite.Sprite):
     def runmovement(self):
 
         keys_pressed = pygame.key.get_pressed()
-        
+
         self.hasmoved = False
         # if not left and right keys at once
         if not ((keys_pressed[pygame.K_LEFT] or keys_pressed[pygame.K_a]) and (keys_pressed[pygame.K_RIGHT] or keys_pressed[pygame.K_d])):
@@ -53,7 +54,6 @@ class Platform(pygame.sprite.Sprite):
                 # accelerate to the right
                 self.speed = min(self.maxspd, self.speed + self.accel)
                 self.hasmoved = True
-        
 
         if not self.hasmoved:
             if self.speed != 0:
@@ -67,33 +67,34 @@ class Platform(pygame.sprite.Sprite):
             self.move(self.speed, 0) 
 
     def lenset(self, width):
-        self.width = width
-        self.activeheight = round(self.defaultwidth/92*9)
+        self.activeheight = round(self.width/92*9)
         tempxcenter = self.rect.centerx
-        self.image = pygame.transform.scale(self.currentimg, (self.width, self.activeheight))
+        self.image = pygame.transform.scale(self.currentimg, (width, self.activeheight))
         self.rect.h = self.image.get_height()
         self.rect.w = self.image.get_width()
         self.rect.centerx = tempxcenter
 
     def reset(self):
-        self.rect.x = 500 - (self.defaultwidth/2)
+        self.rect.x = 500 - (self.width/2)
         self.rect.y = 630
         self.maxspd = 10
         self.speed = 0
-        self.lenset(self.defaultwidth)
+        self.lenset(self.width)
+        self.growcooldown = 0
+        self.speedcooldown = 0
 
     def checkcooldowns(self):
         if self.growcooldown > 0:
             self.growcooldown -= 1
             if self.growcooldown == 0:
-                self.lenset(self.defaultwidth)
+                self.lenset(self.width)
         if self.speedcooldown > 0:
             self.speedcooldown -= 1
             if self.speedcooldown == 0:
-                self.accel /= 2
-                self.speed /= 2
-                self.maxspd /= 2
-    
+                self.accel = 1
+                self.maxspd = 10
+                self.speed = 0
+
     def setblasters(self):
 
         if self.speed != 0:
@@ -111,7 +112,7 @@ class Platform(pygame.sprite.Sprite):
         else:
             self.currentimg = self.PFnonenone
 
-        self.image = pygame.transform.scale(self.currentimg, (self.width, self.activeheight))
+        self.image = pygame.transform.scale(self.currentimg, (self.rect.width, self.activeheight))
 
     def update(self):
 

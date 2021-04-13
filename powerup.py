@@ -27,10 +27,14 @@ class Powerup(pygame.sprite.Sprite):
             self.image = pygame.transform.scale(og_swiftness, (self.size, self.size))
             self.rect = self.image.get_rect()
         if self.power == 3:
-            og_swiftness = pygame.image.load("assets/multiball.png").convert_alpha()
-            self.image = pygame.transform.scale(og_swiftness, (self.size, self.size))
+            og_multiball = pygame.image.load("assets/multiball.png").convert_alpha()
+            self.image = pygame.transform.scale(og_multiball, (self.size, self.size))
             self.rect = self.image.get_rect()
-            
+        if self.power == 4:
+            og_fireflower = pygame.image.load("assets/fireflower.png").convert_alpha()
+            self.image = pygame.transform.scale(og_fireflower, (self.size, self.size))
+            self.rect = self.image.get_rect()
+
 
         self.realx = x
         self.realy = y
@@ -59,12 +63,15 @@ class Powerup(pygame.sprite.Sprite):
                 platform.growcooldown = 1000
         elif self.power == 2:
             for platform in platforms:
-                platform.maxspd = 20
+                platform.maxspd = 15
                 platform.accel = 2
                 platform.speedcooldown = 1000
         elif self.power == 3:
             for ball in balls:
                 ball.multiball()
+        elif self.power == 4:
+            for ball in balls:
+                ball.firecooldown = 400
 
     def update(self, platforms, balls):
         self.move(0, 3)

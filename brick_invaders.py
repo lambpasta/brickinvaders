@@ -25,6 +25,9 @@ click = pygame.mixer.Sound('assets/click.ogg')
 og_bg = pygame.image.load("assets/background2.png")
 bg = pygame.transform.scale(og_bg, (SCREEN_WIDTH, SCREEN_HEIGHT))
 
+og_speedfade = pygame.image.load("assets/speedfade.png")
+speedfade = pygame.transform.scale(og_speedfade, (SCREEN_WIDTH, 70))
+
 youdied = pygame.image.load("assets/youdied.png")
 youdiedscaled = pygame.transform.scale(youdied, (SCREEN_WIDTH, SCREEN_HEIGHT))
 
@@ -39,8 +42,8 @@ Enemy.spawnenemies(50, 50, 10, 10)
 
 # spawn and layout all balls
 ballcount = 1
-ballsize = 20
-ballspawny = 628 - (ballsize/2)
+ballsize = 30
+ballspawny = 630 - (ballsize/2)
 spawnballs(ballcount, platform.rect.centerx, ballspawny, ballsize, 0, randrange(0, 900)/10+45)
 
 # main game loop
@@ -64,7 +67,7 @@ while True:
     if len(balls) < 1 and (184 <= mousex <= 820) and (360 <= mousey <= 424) and mouse_buttons[0]:
         platform.reset()
         click.play()
-        Ball.spawnballs(ballcount, ballsize, platform.rect.centerx, ballspawny)
+        spawnballs(ballcount, platform.rect.centerx, ballspawny, ballsize, 0, randrange(0, 900)/10+45)
 
 
     """
@@ -79,6 +82,9 @@ while True:
     DRAW section - make everything show up on screen
     """
     screen.blit(bg, (0, 0))
+
+    if platform.speedcooldown > 0:
+        screen.blit(speedfade, (0, 605))
 
     # platform collision box
     # pygame.draw.rect(screen, (255,255,255), (platform.rect.x, platform.rect.y, platform.rect.w, platform.rect.h))

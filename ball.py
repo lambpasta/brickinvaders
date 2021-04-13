@@ -1,7 +1,7 @@
 import pygame
 import os
 from math import sin, cos, radians
-from random import randrange
+from random import randrange, random
 from globalvars import SCREEN_HEIGHT, SCREEN_WIDTH, FRAME_RATE
 
 balls = pygame.sprite.Group()
@@ -18,8 +18,9 @@ class Ball(pygame.sprite.Sprite):
 
         self.size = size
 
-        og_image = pygame.image.load("assets/ball.png").convert_alpha()
-        self.image = pygame.transform.scale(og_image, (self.size, self.size))
+        self.og_ball = pygame.image.load("assets/ball.png").convert_alpha()
+        self.og_powerball = pygame.image.load("assets/powerball.png").convert_alpha()
+        self.image = pygame.transform.scale(self.og_ball, (self.size, self.size))
         self.rect = self.image.get_rect()
 
 
@@ -30,6 +31,8 @@ class Ball(pygame.sprite.Sprite):
 
         self.velocity = velocity
         self.angle = randrange(0, 900)/10+45
+
+        self.firecooldown = 0
     
     def move(self, xchange, ychange):
         self.realx += xchange
@@ -48,6 +51,12 @@ class Ball(pygame.sprite.Sprite):
             ball.velocity = 0
             ball.angle = randrange(0, 90)+45
             ball.size = 20
+            ball.firecooldown = 0
+
+        def checkcooldowns(self):
+            if self.firecooldown > 0:
+                self.firecooldown -= 1
+
 
     def getx(self, angle):
         return cos(radians(self.angle))*self.velocity
@@ -64,42 +73,56 @@ class Ball(pygame.sprite.Sprite):
     def multiball(self):
         self.selfspawnballs(2, self.rect.x, self.rect.y, self.size, 10, randrange(0, 900)/10+45)
 
+    def bounceonedges(self):
+        if ((self.rect.x + self.size) >= SCREEN_WIDTH) or ((self.rect.x) <= 0):
+            self.verticalbounce()
+        if ((self.rect.y) < 0):
+            self.horizontalbounce()
+
+    def updatepowers(self):
+        if self.firecooldown > 0:
+            self.firecooldown -= 1
+            self.image = pygame.transform.scale(self.og_powerball, (self.size, self.size))
+        else:
+            self.image = pygame.transform.scale(self.og_ball, (self.size, self.size))
+
+    def collidewplatform(self, platforms, platform):
+        if pygame.sprite.spritecollide(self, platforms, False):
+            if self.rect.bottom - self.gety(self.angle) < platform.rect.top:
+                self.horizontalbounce()
+            else:
+                self.verticalbounce()
+            ballpospercent = ((self.rect.centerx - platform.rect.x)/platform.rect.width)*100
+            self.angle -= (ballpospercent - 50)/3
+
+    def collidewenemies(self, enemies, Powerup):
+        enemies_hit = pygame.sprite.spritecollide(self, enemies, False)
+
+        for enemy in enemies_hit:
+            if abs(self.rect.centerx - enemy.rect.centerx) < abs(self.rect.centery - enemy.rect.centery):
+                if self.firecooldown < 1:
+                    self.horizontalbounce()
+            else:
+                if self.firecooldown < 1:
+                    self.verticalbounce()
+            enemies.remove(enemy)
+            if random() >= 0.85:
+                Powerup.addpowerup(enemy.rect.x, enemy.rect.y, 40, randrange(1, 5))
+
     def update(self, platform, platforms, enemies, hasmoved, Powerup):
+
+        if self.rect.y > SCREEN_HEIGHT:
+            balls.remove(self)
+
+        self.updatepowers()
+
+        self.move(self.getx(self.angle), self.gety(self.angle))
 
         if hasmoved: 
             self.velocity = 10
 
-        if ((self.rect.x + self.size) >= SCREEN_WIDTH) or ((self.rect.x) <= 0):
-            self.verticalbounce()
+        self.bounceonedges()
 
-        if ((self.rect.y) < 0):
-            self.horizontalbounce()
-        
-        self.move(self.getx(self.angle), self.gety(self.angle))
+        self.collidewplatform(platforms, platform)
 
-        if pygame.sprite.spritecollide(self, platforms, False):
-            self.horizontalbounce()
-            ballpospercent = ((self.rect.centerx - platform.rect.x)/platform.rect.width)*100
-            self.angle -= (ballpospercent - 50)/3
-
-        
-        enemies_hit = pygame.sprite.spritecollide(self, enemies, False)
-
-        # if len(enemies_hit) > 0:
-        #     balls.add(Ball(self.rect.centerx, self.rect.centery, self.size, 10, randrange(0, 900)/10+45)
-        #     print("addingball")
-
-        for enemy in enemies_hit:
-            if abs(self.rect.centerx - enemy.rect.centerx) < abs(self.rect.centery - enemy.rect.centery):
-                self.horizontalbounce()
-            else:
-                self.verticalbounce()
-            enemies.remove(enemy)
-            Powerup.addpowerup(enemy.rect.x, enemy.rect.y, 40, randrange(1, 4))
-
-
-        for ball in balls:
-            if ball.rect.y > SCREEN_HEIGHT:
-                balls.remove(ball)
-
-    
+        self.collidewenemies(enemies, Powerup)
