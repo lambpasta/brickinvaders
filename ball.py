@@ -11,6 +11,9 @@ def spawnballs(count, x, y, size, velocity, angle):
     for i in range(count):
         balls.add(Ball(x, y, size, velocity, angle))
 
+def overlap(a, b):
+    return a[0] <= b[0] <= a[1] or b[0] <= a[0] <= b[1]
+
 class Ball(pygame.sprite.Sprite):
 
     def __init__(self, xcenter, ycenter, size, velocity, angle):
@@ -88,26 +91,63 @@ class Ball(pygame.sprite.Sprite):
 
     def collidewplatform(self, platforms, platform):
         if pygame.sprite.spritecollide(self, platforms, False):
-            if self.rect.bottom - self.gety(self.angle) < platform.rect.top:
-                self.horizontalbounce()
-            else:
-                self.verticalbounce()
+
+            
+            self.rect.bottom = platform.rect.top
+            self.horizontalbounce()
+
             ballpospercent = ((self.rect.centerx - platform.rect.x)/platform.rect.width)*100
             self.angle -= (ballpospercent - 50)/3
 
     def collidewenemies(self, enemies, Powerup):
-        enemies_hit = pygame.sprite.spritecollide(self, enemies, False)
+        
+        enemies_hit = pygame.sprite.spritecollide(self, enemies, True)
 
         for enemy in enemies_hit:
-            if abs(self.rect.centerx - enemy.rect.centerx) < abs(self.rect.centery - enemy.rect.centery):
-                if self.firecooldown < 1:
-                    self.horizontalbounce()
-            else:
-                if self.firecooldown < 1:
-                    self.verticalbounce()
-            enemies.remove(enemy)
             if random() >= 0.85:
                 Powerup.addpowerup(enemy.rect.x, enemy.rect.y, 40, randrange(1, 5))
+
+        if self.firecooldown <= 0:
+            if len(enemies_hit) == 2:
+                if enemies_hit[0].rect.x == enemies_hit[1].rect.x:
+                    self.verticalbounce()
+                elif enemies_hit[0].rect.y == enemies_hit[1].rect.y:
+                    self.horizontalbounce()
+                else:
+                    self.horizontalbounce()
+                    self.verticalbounce()
+
+            elif self.velocity != 0 and enemies_hit:
+                
+                xchange = self.getx(self.angle)
+                ychange = self.gety(self.angle)
+
+                slope = ychange/xchange
+
+                if ychange > 0:
+                    for enemy in enemies_hit:
+
+                        xonedge = ((enemy.rect.top/slope), (enemy.rect.top/slope) + self.size)
+                        enemyxrange = (enemy.rect.left, enemy.rect.right)
+                        
+                        if overlap(xonedge, enemyxrange):
+                            self.verticalbounce()
+                        else:
+                            self.horizontalbounce()
+
+                elif ychange < 0:
+                    for enemy in enemies_hit:
+
+                        xonedge = ((enemy.rect.bottom/slope), (enemy.rect.bottom/slope) + self.size)
+                        enemyxrange = (enemy.rect.left, enemy.rect.right)
+                        
+                        if overlap(xonedge, enemyxrange):
+                            self.verticalbounce()
+                        else:
+                            self.horizontalbounce()
+
+                else:
+                    self.horizontalbounce()
 
     def update(self, platform, platforms, enemies, hasmoved, Powerup):
 
@@ -119,7 +159,7 @@ class Ball(pygame.sprite.Sprite):
         self.move(self.getx(self.angle), self.gety(self.angle))
 
         if hasmoved: 
-            self.velocity = 10
+            self.velocity = 5
 
         self.bounceonedges()
 

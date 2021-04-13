@@ -60,21 +60,21 @@ class Powerup(pygame.sprite.Sprite):
         if self.power == 1:
             for platform in platforms:
                 platform.lenset(200)
-                platform.growcooldown = 1000
+                platform.growcooldown = 2000
         elif self.power == 2:
             for platform in platforms:
-                platform.maxspd = 15
-                platform.accel = 2
-                platform.speedcooldown = 1000
+                platform.maxspd = 8
+                platform.accel = 1
+                platform.speedcooldown = 2000
         elif self.power == 3:
             for ball in balls:
                 ball.multiball()
         elif self.power == 4:
             for ball in balls:
-                ball.firecooldown = 400
+                ball.firecooldown = 800
 
     def update(self, platforms, balls):
-        self.move(0, 3)
+        self.move(0, 2)
         if pygame.sprite.spritecollide(self, platforms, False):
             self.dopower(platforms, balls)
             powerups.remove(self)

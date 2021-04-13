@@ -24,14 +24,14 @@ class Platform(pygame.sprite.Sprite):
         self.rect.x = x
         self.rect.y = y
 
-        self.maxspd = 10
+        self.maxspd = 4
         self.speed = 0
 
-        self.accel = 1
+        self.accel = 0.5
         self.hasmoved = False
 
         self.growcooldown = 0
-        self.speedcooldown = 500
+        self.speedcooldown = 0
     
     def move(self, xchange, ychange):
         self.rect.x += xchange
@@ -77,7 +77,7 @@ class Platform(pygame.sprite.Sprite):
     def reset(self):
         self.rect.x = 500 - (self.width/2)
         self.rect.y = 630
-        self.maxspd = 10
+        self.maxspd = 4
         self.speed = 0
         self.lenset(self.width)
         self.growcooldown = 0
@@ -91,8 +91,8 @@ class Platform(pygame.sprite.Sprite):
         if self.speedcooldown > 0:
             self.speedcooldown -= 1
             if self.speedcooldown == 0:
-                self.accel = 1
-                self.maxspd = 10
+                self.accel = 0.5
+                self.maxspd = 5
                 self.speed = 0
 
     def setblasters(self):
