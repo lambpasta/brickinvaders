@@ -5,7 +5,7 @@ from ball import Ball, balls, immortal, spawnballs
 from platform import Platform
 from powerup import Powerup, powerups
 from globalvars import SCREEN_HEIGHT, SCREEN_WIDTH, FRAME_RATE
-from enemy import enemies, Enemy
+from enemy import enemies, Enemy, spawnenemies
 from math import floor
 from random import randrange
 
@@ -38,7 +38,7 @@ platforms.add(platform)
 
 
 # spawn and layout all enemies
-Enemy.spawnenemies(50, 50, 10, 10)
+spawnenemies(50, 50, 10, 10)
 
 # spawn and layout all balls
 ballcount = 1
@@ -82,12 +82,9 @@ while True:
     DRAW section - make everything show up on screen
     """
     screen.blit(bg, (0, 0))
-
+    
     if platform.speedcooldown > 0:
         screen.blit(speedfade, (0, 605))
-
-    # platform collision box
-    # pygame.draw.rect(screen, (255,255,255), (platform.rect.x, platform.rect.y, platform.rect.w, platform.rect.h))
     
     enemies.draw(screen)
     balls.draw(screen)

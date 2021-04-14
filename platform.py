@@ -24,7 +24,7 @@ class Platform(pygame.sprite.Sprite):
         self.rect.x = x
         self.rect.y = y
 
-        self.maxspd = 4
+        self.maxspd = 5
         self.speed = 0
 
         self.accel = 0.5
@@ -77,7 +77,7 @@ class Platform(pygame.sprite.Sprite):
     def reset(self):
         self.rect.x = 500 - (self.width/2)
         self.rect.y = 630
-        self.maxspd = 4
+        self.maxspd = 5
         self.speed = 0
         self.lenset(self.width)
         self.growcooldown = 0

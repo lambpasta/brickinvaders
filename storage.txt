@@ -1,36 +1,70 @@
+    def collidewenemies(self, enemies, Powerup):
+        
+        enemies_hit = pygame.sprite.spritecollide(self, enemies, True)
 
-    randrange(0, 900)/10+45)
-    
-    def setblasters(self, left, right):
-        tempstr=""
-        if left == 0:
-            tempstr += "none"
-        elif left == 1:
-            tempstr += "half"
-        elif left == 2:
-            tempstr += "full"
-        if right == 0:
-            tempstr += "none"
-        elif right == 1:
-            tempstr += "half"
-        elif right == 2:
-            tempstr += "full"
-        print(tempstr)
-        if tempstr == "nonenone":
-            self.currentimg = self.PFnonenone
-        elif tempstr == "nonehalf":
-            self.currentimg = self.PFnonehalf
-        elif tempstr == "nonefull":
-            self.currentimg = self.PFnonefull
-        elif tempstr == "halfnone":
-            self.currentimg = pygame.transform.flip(self.PFnonehalf, True, False)
-        elif tempstr =="halfhalf":
-            self.currentimg = self.PFhalfhalf
-        elif tempstr == "halffull":
-            self.currentimg = self.PFhalfhalf
-        elif tempstr == "fullnone":
-            self.currentimg = pygame.transform.flip(self.PFnonefull, True, False)
-        elif tempstr == "fullhalf":
-            self.currentimg = pygame.transform.flip(self.PFhalffull, True, False)
-        elif tempstr == "fullfull":
-            self.currentimg = self.PFfullfull   
+        for enemy in enemies_hit:
+            if random() >= 0.85:
+                Powerup.addpowerup(enemy.rect.x, enemy.rect.y, 40, randrange(1, 5))
+
+        leadcorner = self.getleadingcorner()
+
+        if len(enemies_hit) == 2:
+            if enemies_hit[0].rect.x == enemies_hit[1].rect.x:
+                self.verticalbounce()
+            elif enemies_hit[0].rect.y == enemies_hit[1].rect.y:
+                self.horizontalbounce()
+            else:
+                self.verticalbounce()
+                self.horizontalbounce()
+        else:
+            # get line leading corner of ball is travelling in slope-intercept form (y = mx + b)
+
+            m = self.gety(self.angle) / self.getx(self.angle) # m = y/x
+            b = int(leadcorner[1] - (m*leadcorner[0])) # b = y - mx
+
+            for enemy in enemies_hit:
+
+                # if going right
+                if self.getx(self.angle) > 0:
+
+                    # if going down
+                    if self.gety(self.angle) > 0:
+                        if enemy.rect.top <= (m*(enemy.rect.left) + b) <= enemy.rect.bottom:
+                            print('bouncing off left')
+                            self.verticalbounce()
+                        else:
+                            self.horizontalbounce()
+                            print('bouncing off top/bottom')
+
+                    # if going up
+                    if self.gety(self.angle) < 0:
+                        if enemy.rect.top <= (m*(enemy.rect.left) + b) <= enemy.rect.bottom:
+                            print('bouncing off left')
+                            self.verticalbounce()
+                        else:
+                            self.horizontalbounce()
+                            print('bouncing off top/bottom')
+
+                # if going left
+                if self.getx(self.angle) < 0:
+
+                    # if going down
+                    if self.gety(self.angle) > 0:
+                        if enemy.rect.top <= (m*(enemy.rect.right) + b) <= enemy.rect.bottom:
+                            print('bouncing off left')
+                            self.verticalbounce()
+                        else:
+                            self.horizontalbounce()
+                            print('bouncing off top/bottom')
+
+                    # if going up
+                    if self.gety(self.angle) < 0:
+                        if enemy.rect.top <= (m*(enemy.rect.right) + b) <= enemy.rect.bottom:
+                            print('bouncing off left')
+                            self.verticalbounce()
+                        else:
+                            self.horizontalbounce()
+                            print('bouncing off top/bottom')
+
+                if self.getx(self.angle) == 0:
+                    print('dumb game thinks ball isnt moving')

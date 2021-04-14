@@ -67,6 +67,33 @@ class Ball(pygame.sprite.Sprite):
     def gety(self, angle):
         return sin(radians(self.angle))*self.velocity*-1
 
+    def getleadingcorner(self):
+        if self.getx(self.angle) > 0:
+            if self.gety(self.angle) > 0:
+                # ball is going down and right
+                return self.rect.bottomright
+            elif self.gety(self.angle) < 0:
+                # ball is going up and right
+                return self.rect.topright
+            else:
+                # ball is going directly right
+                self.verticalbounce()
+
+        elif self.getx(self.angle) < 0:
+            if self.gety(self.angle) > 0:
+                # ball is going down and left
+                return self.rect.bottomleft
+            elif self.gety(self.angle) < 0:
+                # ball is going up and left
+                return self.rect.topleft
+            else:
+                # ball is going directly left
+                self.verticalbounce()
+
+        elif self.gety(self.angle) != 0:
+            # ball is going directly up/down
+            self.horizontalbounce()
+
     def verticalbounce(self):
         self.angle = (90 - self.angle) + 90
 
@@ -74,7 +101,7 @@ class Ball(pygame.sprite.Sprite):
         self.angle = (180 - self.angle) + 180
     
     def multiball(self):
-        self.selfspawnballs(2, self.rect.x, self.rect.y, self.size, 10, randrange(0, 900)/10+45)
+        self.selfspawnballs(2, self.rect.x, self.rect.y, self.size, 5, randrange(0, 900)/10+45)
 
     def bounceonedges(self):
         if ((self.rect.x + self.size) >= SCREEN_WIDTH) or ((self.rect.x) <= 0):
@@ -91,10 +118,28 @@ class Ball(pygame.sprite.Sprite):
 
     def collidewplatform(self, platforms, platform):
         if pygame.sprite.spritecollide(self, platforms, False):
+            leadcorner = self.getleadingcorner()
 
-            
-            self.rect.bottom = platform.rect.top
-            self.horizontalbounce()
+            # get line leading corner of ball is travelling in slope-intercept form (y = mx + b)
+
+            m = self.gety(self.angle) / self.getx(self.angle) # m = y/x
+            b = int(leadcorner[1] - (m*leadcorner[0])) # b = y - mx
+
+            # if going right
+            if self.getx(self.angle) > 0:
+                if platform.rect.top <= (m*(platform.rect.left) + b) <= platform.rect.bottom:
+                    self.verticalbounce()
+                else:
+                    self.horizontalbounce()
+
+            # if going left
+            if self.getx(self.angle) < 0:
+                if platform.rect.top <= (m*(platform.rect.right) + b) <= platform.rect.bottom:
+                    self.verticalbounce()
+                else:
+                    self.horizontalbounce()
+            if self.getx(self.angle) == 0:
+                print('dumb game thinks ball isnt moving')
 
             ballpospercent = ((self.rect.centerx - platform.rect.x)/platform.rect.width)*100
             self.angle -= (ballpospercent - 50)/3
@@ -107,47 +152,26 @@ class Ball(pygame.sprite.Sprite):
             if random() >= 0.85:
                 Powerup.addpowerup(enemy.rect.x, enemy.rect.y, 40, randrange(1, 5))
 
-        if self.firecooldown <= 0:
-            if len(enemies_hit) == 2:
-                if enemies_hit[0].rect.x == enemies_hit[1].rect.x:
+        if len(enemies_hit) == 2:
+            if enemies_hit[0].rect.x == enemies_hit[1].rect.x:
+                if self.firecooldown <= 0:
                     self.verticalbounce()
-                elif enemies_hit[0].rect.y == enemies_hit[1].rect.y:
+            elif enemies_hit[0].rect.y == enemies_hit[1].rect.y:
+                if self.firecooldown <= 0:
                     self.horizontalbounce()
-                else:
-                    self.horizontalbounce()
+            else:
+                if self.firecooldown <= 0:
                     self.verticalbounce()
-
-            elif self.velocity != 0 and enemies_hit:
-                
-                xchange = self.getx(self.angle)
-                ychange = self.gety(self.angle)
-
-                slope = ychange/xchange
-
-                if ychange > 0:
-                    for enemy in enemies_hit:
-
-                        xonedge = ((enemy.rect.top/slope), (enemy.rect.top/slope) + self.size)
-                        enemyxrange = (enemy.rect.left, enemy.rect.right)
-                        
-                        if overlap(xonedge, enemyxrange):
-                            self.verticalbounce()
-                        else:
-                            self.horizontalbounce()
-
-                elif ychange < 0:
-                    for enemy in enemies_hit:
-
-                        xonedge = ((enemy.rect.bottom/slope), (enemy.rect.bottom/slope) + self.size)
-                        enemyxrange = (enemy.rect.left, enemy.rect.right)
-                        
-                        if overlap(xonedge, enemyxrange):
-                            self.verticalbounce()
-                        else:
-                            self.horizontalbounce()
-
-                else:
                     self.horizontalbounce()
+        else:
+            for enemy in enemies_hit:
+                if abs(self.rect.centerx - enemy.rect.centerx) > abs(self.rect.centery - enemy.rect.centery):
+                    if self.firecooldown <= 0:
+                        self.verticalbounce()
+                else:
+                    if self.firecooldown <= 0:
+                        self.horizontalbounce()
+
 
     def update(self, platform, platforms, enemies, hasmoved, Powerup):
 
@@ -165,4 +189,5 @@ class Ball(pygame.sprite.Sprite):
 
         self.collidewplatform(platforms, platform)
 
-        self.collidewenemies(enemies, Powerup)
+        if self.velocity != 0 and pygame.sprite.spritecollide(self, enemies, False):
+            self.collidewenemies(enemies, Powerup)

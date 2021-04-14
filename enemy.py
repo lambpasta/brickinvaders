@@ -4,7 +4,19 @@ from globalvars import SCREEN_HEIGHT, SCREEN_WIDTH, FRAME_RATE
 from math import floor
 
 enemies = pygame.sprite.Group()
+bullets = pygame.sprite.Group()
 
+def addenemy(x, y, size):
+    enemies.add(Enemy(x, y, size))
+
+def spawnenemies(count, size, xspacing, yspacing):
+    enemyxspacing = xspacing + size
+    enemyyspacing = yspacing + size
+    enemycontainer = SCREEN_WIDTH - size
+    for i in range(count):
+        x = ((enemyxspacing)*i) % enemycontainer
+        y = (enemyyspacing)*(1 + floor((enemyxspacing)*i/enemycontainer))
+        addenemy(x, y, size)
 
 class Enemy(pygame.sprite.Sprite):
 
@@ -29,20 +41,19 @@ class Enemy(pygame.sprite.Sprite):
         self.rect.x = int(self.realx)
         self.rect.y = int(self.realy)
 
-    def addenemy(x, y, size):
-        enemies.add(Enemy(x, y, size))
+    def update(self):
+        pass
 
-    def spawnenemies(count, size, xspacing, yspacing):
-        enemyxspacing = xspacing + size
-        enemyyspacing = yspacing + size
-        enemycontainer = SCREEN_WIDTH - size
-        for i in range(count):
-            x = ((enemyxspacing)*i) % enemycontainer
-            y = (enemyyspacing)*(1 + floor((enemyxspacing)*i/enemycontainer))
-            Enemy.addenemy(x, y, size)
 
-    def xcenter(self):
-        return self.rect.x + (self.size/2)
+class Bullet(pygame.sprite.Sprite):
+    def __init__(self, x, y, width):
+        super().__init__()
 
-    def ycenter(self):
-        return self.rect.y + (self.size/2)
+        self.size = size
+
+        og_bullet = pygame.image.load("assets/bullet.png").convert_alpha()
+        self.image = pygame.transform.scale(og_bullet, (self.size, (3/4)*self.size))
+        self.rect = self.image.get_rect()
+
+        self.rect.x = x
+        self.rect.y = y

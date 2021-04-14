@@ -63,7 +63,7 @@ class Powerup(pygame.sprite.Sprite):
                 platform.growcooldown = 2000
         elif self.power == 2:
             for platform in platforms:
-                platform.maxspd = 8
+                platform.maxspd = 10
                 platform.accel = 1
                 platform.speedcooldown = 2000
         elif self.power == 3:
