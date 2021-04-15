@@ -8,7 +8,7 @@ SCREEN_WIDTH = 1000
 SCREEN_HEIGHT = 700
 FRAME_RATE = 100
 
-immortal = False
+immortal = True
 dead = False
 
 pygame.init()
@@ -47,7 +47,7 @@ def addenemy(x, y, size):
 def spawnenemies(count, size, xspacing, yspacing):
     enemyxspacing = xspacing + size
     enemyyspacing = yspacing + size
-    enemycontainer = SCREEN_WIDTH - size
+    enemycontainer = SCREEN_WIDTH - (2*size)
     for i in range(count):
         x = ((enemyxspacing)*i) % enemycontainer
         y = (enemyyspacing)*(1 + floor((enemyxspacing)*i/enemycontainer))
@@ -71,7 +71,7 @@ class Platform(pygame.sprite.Sprite):
         self.width = self.defaultw
         self.activeheight = round(self.width/92*9)
 
-        # image size 92 x 9#
+        # image size 92 x 9
         # platform width 78 (centered)
 
 
@@ -249,11 +249,6 @@ class Ball(pygame.sprite.Sprite):
     def multiball(self):
         self.selfspawnballs(2, self.rect.x, self.rect.y, self.size, 5, randrange(0, 900)/10+45)
 
-    def correctangles(self):
-        self.angle = self.angle % 360
-        if round(self.angle, 3) % 90 == 0:
-            self.angle += 5
-
     def bounceonedges(self):
         if ((self.rect.x + self.size) >= SCREEN_WIDTH):
             self.rect.right = SCREEN_WIDTH + 1
@@ -285,7 +280,7 @@ class Ball(pygame.sprite.Sprite):
 
 
             ballpospercent = ((self.rect.centerx - platform.rect.x)/platform.rect.width)*100
-            self.angle -= (ballpospercent - 50)/3 % 360
+            self.angle -= (ballpospercent - 50)/3
 
     def collidewenemies(self, enemies, Powerup):
         
@@ -340,8 +335,7 @@ class Ball(pygame.sprite.Sprite):
         if self.velocity != 0 and pygame.sprite.spritecollide(self, enemies, False):
             self.collidewenemies(enemies, Powerup)
             splat.play()
-
-        self.correctangles()
+        print(self.angle)
 
 class Enemy(pygame.sprite.Sprite):
 
@@ -359,12 +353,8 @@ class Enemy(pygame.sprite.Sprite):
         self.realy = y
         self.rect.x = int(self.realx)
         self.rect.y = int(self.realy)
-    
-    def move(self, xchange, ychange):
-        self.realx += xchange
-        self.realy += ychange
-        self.rect.x = int(self.realx)
-        self.rect.y = int(self.realy)
+
+        self.movecycle = 0
 
     def shoot(self, platform):
         xdiff = platform.rect.centerx - self.rect.x
@@ -392,8 +382,11 @@ class Enemy(pygame.sprite.Sprite):
         bullets.add(Bullet(self.rect.centerx, self.rect.bottom, x*b, b, angle))
 
     def update(self, platform):
-        if random() > 0.9996:
+        shootprobability = 1/200000*len(enemies)
+        if random() < shootprobability:
             self.shoot(platform)
+        self.rect.x = self.realx + self.size + 20*sin(self.movecycle)
+        self.movecycle += 0.03
 
 class Bullet(pygame.sprite.Sprite):
     def __init__(self, xcenter, y, xchange, ychange, angle):
@@ -481,18 +474,18 @@ class Powerup(pygame.sprite.Sprite):
         if self.power == 1:
             for platform in platforms:
                 platform.lenset(platform.rect.w + 75)
-                platform.growcooldown = 2000
+                platform.growcooldown = 150
         elif self.power == 2:
             for platform in platforms:
                 platform.maxspd = 10
                 platform.accel = 1
-                platform.speedcooldown = 2000
+                platform.speedcooldown = 1500
         elif self.power == 3:
             for ball in balls:
                 ball.multiball()
         elif self.power == 4:
             for ball in balls:
-                ball.firecooldown = 800
+                ball.firecooldown = 400
 
     def update(self, platforms, balls):
         self.move(0, 2)
@@ -538,7 +531,7 @@ class Bloodsplatter(pygame.sprite.Sprite):
 platform = Platform(500, 630)
 platforms.add(platform)
 
-spawnenemies(48, 50, 10, 5)
+spawnenemies(60, 50, 10, 5)
 
 ballcount = 1
 ballsize = 30

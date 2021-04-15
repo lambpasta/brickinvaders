@@ -1,8 +1,7 @@
 - Make enemies move
 - Remove 'score' from death screen
+- Make attacks ramp by number of enemies
 
 LARGE:
 - Add home screen,  menu and levels
 - Add more sounds/music and visual effects
-
-- Create a way to publish
