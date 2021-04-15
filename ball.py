@@ -6,7 +6,6 @@ from globalvars import SCREEN_HEIGHT, SCREEN_WIDTH, FRAME_RATE
 from bloodsplatter import splatter
 
 balls = pygame.sprite.Group()
-immortal = False
 
 pygame.init()
 
@@ -81,11 +80,24 @@ class Ball(pygame.sprite.Sprite):
     def multiball(self):
         self.selfspawnballs(2, self.rect.x, self.rect.y, self.size, 5, randrange(0, 900)/10+45)
 
+    def correctangles(self):
+        self.angle = self.angle % 360
+        if round(self.angle, 3) % 90 == 0:
+            self.angle += 5
+
     def bounceonedges(self):
-        if ((self.rect.x + self.size) >= SCREEN_WIDTH) or ((self.rect.x) <= 0):
+        if ((self.rect.x + self.size) >= SCREEN_WIDTH):
+            self.rect.right = SCREEN_WIDTH + 1
+            self.verticalbounce()
+        elif ((self.rect.x) <= 0):
+            self.rect.x = 1
             self.verticalbounce()
         if ((self.rect.y) < 0):
+            self.rect.y = 1
             self.horizontalbounce()
+            if 0 >= self.angle >= 360:
+                print(ball)
+
 
     def updatepowers(self):
         if self.firecooldown > 0:
@@ -104,7 +116,7 @@ class Ball(pygame.sprite.Sprite):
 
 
             ballpospercent = ((self.rect.centerx - platform.rect.x)/platform.rect.width)*100
-            self.angle -= (ballpospercent - 50)/3
+            self.angle -= (ballpospercent - 50)/3 % 360
 
     def collidewenemies(self, enemies, Powerup):
         
@@ -136,10 +148,14 @@ class Ball(pygame.sprite.Sprite):
                         self.horizontalbounce()
 
 
-    def update(self, platform, enemies, Powerup):
+    def update(self, platform, enemies, Powerup, immortal):
 
         if self.rect.y > SCREEN_HEIGHT:
-            balls.remove(self)
+            if not immortal:
+                balls.remove(self)
+            else:
+                self.rect.bottom = SCREEN_HEIGHT
+                self.horizontalbounce()
 
         self.updatepowers()
 
@@ -155,3 +171,5 @@ class Ball(pygame.sprite.Sprite):
         if self.velocity != 0 and pygame.sprite.spritecollide(self, enemies, False):
             self.collidewenemies(enemies, Powerup)
             splat.play()
+
+        self.correctangles()

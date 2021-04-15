@@ -1,3 +1,9 @@
 - Fix ball stuck in corner of screen bug
-- Add home screen,  menu and levels
 - Make enemies move
+- Remove 'score' from death screen
+
+LARGE:
+- Add home screen,  menu and levels
+- Add more sounds/music and visual effects
+
+- Create a way to publish

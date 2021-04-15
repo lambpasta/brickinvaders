@@ -93,7 +93,7 @@ class Bullet(pygame.sprite.Sprite):
         self.xchange = xchange
         self.ychange = ychange
 
-    def update(self, platform):
+    def update(self, platform, immortal):
         self.realxcenter += self.xchange
         self.realy += self.ychange
 
@@ -103,5 +103,5 @@ class Bullet(pygame.sprite.Sprite):
         if self.rect.y >= SCREEN_HEIGHT:
             bullets.remove(self)
 
-        if pygame.sprite.spritecollide(platform, bullets, True):
+        if pygame.sprite.spritecollide(platform, bullets, True) and not immortal:
             platform.lenset(platform.rect.w - 20)

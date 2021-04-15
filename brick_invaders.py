@@ -1,7 +1,7 @@
 import sys
 import os
 import pygame
-from ball import Ball, balls, immortal, spawnballs
+from ball import Ball, balls, spawnballs
 from platform import Platform
 from powerup import Powerup, powerups
 from globalvars import SCREEN_HEIGHT, SCREEN_WIDTH, FRAME_RATE
@@ -47,6 +47,8 @@ ballsize = 30
 ballspawny = 630 - (ballsize/2)
 spawnballs(ballcount, platform.rect.centerx, ballspawny, ballsize, 0, randrange(0, 900)/10+45)
 
+immortal = False
+
 # main game loop
 while True:
     """
@@ -77,9 +79,9 @@ while True:
 
     platform.update()
     enemies.update(platform)
-    balls.update(platform, enemies, Powerup)
+    balls.update(platform, enemies, Powerup, immortal)
     powerups.update(platforms, balls)
-    bullets.update(platform)
+    bullets.update(platform, immortal)
     blood.update()
 
     """
