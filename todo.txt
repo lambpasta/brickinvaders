@@ -1,4 +1,3 @@
-- Fix ball stuck in corner of screen bug
 - Make enemies move
 - Remove 'score' from death screen
 

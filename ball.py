@@ -15,9 +15,6 @@ def spawnballs(count, x, y, size, velocity, angle):
     for i in range(count):
         balls.add(Ball(x, y, size, velocity, angle))
 
-def overlap(a, b):
-    return a[0] <= b[0] <= a[1] or b[0] <= a[0] <= b[1]
-
 class Ball(pygame.sprite.Sprite):
 
     def __init__(self, xcenter, ycenter, size, velocity, angle):

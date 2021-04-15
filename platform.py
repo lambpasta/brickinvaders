@@ -4,7 +4,7 @@ from globalvars import SCREEN_HEIGHT, SCREEN_WIDTH, FRAME_RATE
 
 class Platform(pygame.sprite.Sprite):
 
-    def __init__(self, x, y):
+    def __init__(self, xcenter, y):
         super().__init__()
 
         self.defaultw = 150
@@ -22,7 +22,7 @@ class Platform(pygame.sprite.Sprite):
         self.image = pygame.transform.scale(self.currentimg, (self.width, self.activeheight))
         self.rect = self.image.get_rect()
 
-        self.rect.x = x
+        self.rect.centerx = xcenter
         self.rect.y = y
 
         self.maxspd = 5
@@ -33,7 +33,7 @@ class Platform(pygame.sprite.Sprite):
 
         self.growcooldown = 0
         self.speedcooldown = 0
-    
+
     def move(self, xchange, ychange):
         self.rect.x += xchange
         self.rect.y += ychange

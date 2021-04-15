@@ -48,6 +48,7 @@ ballspawny = 630 - (ballsize/2)
 spawnballs(ballcount, platform.rect.centerx, ballspawny, ballsize, 0, randrange(0, 900)/10+45)
 
 immortal = False
+dead = False
 
 # main game loop
 while True:
@@ -67,10 +68,11 @@ while True:
     mouse_buttons = pygame.mouse.get_pressed()
 
     # respawn button
-    if len(balls) < 1 and (184 <= mousex <= 820) and (360 <= mousey <= 424) and mouse_buttons[0]:
+    if dead and (184 <= mousex <= 820) and (360 <= mousey <= 424) and mouse_buttons[0]:
         platform.reset()
         click.play()
         spawnballs(ballcount, platform.rect.centerx, ballspawny, ballsize, 0, randrange(0, 900)/10+45)
+        dead = False
 
 
     """
@@ -83,6 +85,8 @@ while True:
     powerups.update(platforms, balls)
     bullets.update(platform, immortal)
     blood.update()
+    if len(balls) < 1 or platform.rect.w < 40:
+        dead = True
 
     """
     DRAW section - make everything show up on screen
@@ -99,7 +103,7 @@ while True:
     bullets.draw(screen)
     blood.draw(screen)
 
-    if len(balls) < 1:
+    if dead:
         screen.blit(youdiedscaled, (0, 0))
     pygame.display.flip()  # Pygame uses a double-buffer, without this we see half-completed frames
     clock.tick(FRAME_RATE)  # Pause the clock to always maintain FRAME_RATE frames per second
