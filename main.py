@@ -10,6 +10,7 @@ FRAME_RATE = 100
 
 immortal = True
 dead = False
+victorywave = 0
 
 pygame.init()
 
@@ -31,6 +32,9 @@ speedfade = pygame.transform.scale(og_speedfade, (SCREEN_WIDTH, 70))
 
 youdied = pygame.image.load("assets/youdied.png")
 youdiedscaled = pygame.transform.scale(youdied, (SCREEN_WIDTH, SCREEN_HEIGHT))
+
+victory = pygame.image.load("assets/victory.png")
+victoryscaled = pygame.transform.scale(victory, (960, 540))
 
 # create sprite groups
 platforms = pygame.sprite.Group()
@@ -591,7 +595,14 @@ while True:
     bullets.draw(screen)
     blood.draw(screen)
 
-    if dead:
+    if dead and not len(enemies) < 1:
         screen.blit(youdiedscaled, (0, 0))
+
+    if len(enemies) < 1:
+        vicy = sin(victorywave)
+        screen.blit(victoryscaled, (20, vicy*100 + 80))
+        immortal = True
+        victorywave += 0.03
+
     pygame.display.flip()  # Pygame uses a double-buffer, without this we see half-completed frames
     clock.tick(FRAME_RATE)  # Pause the clock to always maintain FRAME_RATE frames per second
