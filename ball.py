@@ -3,9 +3,14 @@ import os
 from math import sin, cos, radians
 from random import randrange, random
 from globalvars import SCREEN_HEIGHT, SCREEN_WIDTH, FRAME_RATE
+from bloodsplatter import splatter
 
 balls = pygame.sprite.Group()
 immortal = False
+
+pygame.init()
+
+splat = pygame.mixer.Sound('assets/splat.wav')
 
 def spawnballs(count, x, y, size, velocity, angle):
     for i in range(count):
@@ -67,33 +72,6 @@ class Ball(pygame.sprite.Sprite):
     def gety(self, angle):
         return sin(radians(self.angle))*self.velocity*-1
 
-    def getleadingcorner(self):
-        if self.getx(self.angle) > 0:
-            if self.gety(self.angle) > 0:
-                # ball is going down and right
-                return self.rect.bottomright
-            elif self.gety(self.angle) < 0:
-                # ball is going up and right
-                return self.rect.topright
-            else:
-                # ball is going directly right
-                self.verticalbounce()
-
-        elif self.getx(self.angle) < 0:
-            if self.gety(self.angle) > 0:
-                # ball is going down and left
-                return self.rect.bottomleft
-            elif self.gety(self.angle) < 0:
-                # ball is going up and left
-                return self.rect.topleft
-            else:
-                # ball is going directly left
-                self.verticalbounce()
-
-        elif self.gety(self.angle) != 0:
-            # ball is going directly up/down
-            self.horizontalbounce()
-
     def verticalbounce(self):
         self.angle = (90 - self.angle) + 90
 
@@ -116,30 +94,14 @@ class Ball(pygame.sprite.Sprite):
         else:
             self.image = pygame.transform.scale(self.og_ball, (self.size, self.size))
 
-    def collidewplatform(self, platforms, platform):
-        if pygame.sprite.spritecollide(self, platforms, False):
-            leadcorner = self.getleadingcorner()
+    def collidewplatform(self, platform):
+        if pygame.sprite.collide_rect(self, platform):
 
-            # get line leading corner of ball is travelling in slope-intercept form (y = mx + b)
+            if platform.rect.top < (self.rect.bottom - self.gety(self.angle)):
+                self.verticalbounce()
+            else:
+                self.horizontalbounce()
 
-            m = self.gety(self.angle) / self.getx(self.angle) # m = y/x
-            b = int(leadcorner[1] - (m*leadcorner[0])) # b = y - mx
-
-            # if going right
-            if self.getx(self.angle) > 0:
-                if platform.rect.top <= (m*(platform.rect.left) + b) <= platform.rect.bottom:
-                    self.verticalbounce()
-                else:
-                    self.horizontalbounce()
-
-            # if going left
-            if self.getx(self.angle) < 0:
-                if platform.rect.top <= (m*(platform.rect.right) + b) <= platform.rect.bottom:
-                    self.verticalbounce()
-                else:
-                    self.horizontalbounce()
-            if self.getx(self.angle) == 0:
-                print('dumb game thinks ball isnt moving')
 
             ballpospercent = ((self.rect.centerx - platform.rect.x)/platform.rect.width)*100
             self.angle -= (ballpospercent - 50)/3
@@ -151,6 +113,7 @@ class Ball(pygame.sprite.Sprite):
         for enemy in enemies_hit:
             if random() >= 0.85:
                 Powerup.addpowerup(enemy.rect.x, enemy.rect.y, 40, randrange(1, 5))
+            splatter(30, enemy.rect.centerx, enemy.rect.centery)
 
         if len(enemies_hit) == 2:
             if enemies_hit[0].rect.x == enemies_hit[1].rect.x:
@@ -173,7 +136,7 @@ class Ball(pygame.sprite.Sprite):
                         self.horizontalbounce()
 
 
-    def update(self, platform, platforms, enemies, hasmoved, Powerup):
+    def update(self, platform, enemies, Powerup):
 
         if self.rect.y > SCREEN_HEIGHT:
             balls.remove(self)
@@ -182,12 +145,13 @@ class Ball(pygame.sprite.Sprite):
 
         self.move(self.getx(self.angle), self.gety(self.angle))
 
-        if hasmoved: 
+        if platform.hasmoved: 
             self.velocity = 5
 
         self.bounceonedges()
 
-        self.collidewplatform(platforms, platform)
+        self.collidewplatform(platform)
 
         if self.velocity != 0 and pygame.sprite.spritecollide(self, enemies, False):
             self.collidewenemies(enemies, Powerup)
+            splat.play()

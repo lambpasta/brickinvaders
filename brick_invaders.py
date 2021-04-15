@@ -5,9 +5,10 @@ from ball import Ball, balls, immortal, spawnballs
 from platform import Platform
 from powerup import Powerup, powerups
 from globalvars import SCREEN_HEIGHT, SCREEN_WIDTH, FRAME_RATE
-from enemy import enemies, Enemy, spawnenemies
+from enemy import enemies, Enemy, spawnenemies, bullets, Bullet
 from math import floor
 from random import randrange
+from bloodsplatter import blood
 
 """
 SETUP section - preparing everything before the main loop runs
@@ -38,7 +39,7 @@ platforms.add(platform)
 
 
 # spawn and layout all enemies
-spawnenemies(50, 50, 10, 10)
+spawnenemies(48, 50, 10, 5)
 
 # spawn and layout all balls
 ballcount = 1
@@ -75,8 +76,11 @@ while True:
     """
 
     platform.update()
-    balls.update(platform, platforms, enemies, platform.hasmoved, Powerup)
+    enemies.update(platform)
+    balls.update(platform, enemies, Powerup)
     powerups.update(platforms, balls)
+    bullets.update(platform)
+    blood.update()
 
     """
     DRAW section - make everything show up on screen
@@ -90,7 +94,8 @@ while True:
     balls.draw(screen)
     platforms.draw(screen)
     powerups.draw(screen)
-
+    bullets.draw(screen)
+    blood.draw(screen)
 
     if len(balls) < 1:
         screen.blit(youdiedscaled, (0, 0))

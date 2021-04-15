@@ -1,0 +1,3 @@
+- Fix ball stuck in corner of screen bug
+- Add home screen,  menu and levels
+- Make enemies move

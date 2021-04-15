@@ -59,7 +59,7 @@ class Powerup(pygame.sprite.Sprite):
     def dopower(self, platforms, balls):
         if self.power == 1:
             for platform in platforms:
-                platform.lenset(200)
+                platform.lenset(platform.rect.w + 75)
                 platform.growcooldown = 2000
         elif self.power == 2:
             for platform in platforms:

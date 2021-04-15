@@ -7,7 +7,8 @@ class Platform(pygame.sprite.Sprite):
     def __init__(self, x, y):
         super().__init__()
 
-        self.width = 150
+        self.defaultw = 150
+        self.width = self.defaultw
         self.activeheight = round(self.width/92*9)
 
         # image size 92 x 9#
@@ -67,7 +68,8 @@ class Platform(pygame.sprite.Sprite):
             self.move(self.speed, 0) 
 
     def lenset(self, width):
-        self.activeheight = round(self.width/92*9)
+        self.width = width
+        self.activeheight = max(round(width/92*9), 15)
         tempxcenter = self.rect.centerx
         self.image = pygame.transform.scale(self.currentimg, (width, self.activeheight))
         self.rect.h = self.image.get_height()
@@ -75,7 +77,8 @@ class Platform(pygame.sprite.Sprite):
         self.rect.centerx = tempxcenter
 
     def reset(self):
-        self.rect.x = 500 - (self.width/2)
+        self.width = self.defaultw
+        self.rect.centerx = 500
         self.rect.y = 630
         self.maxspd = 5
         self.speed = 0
