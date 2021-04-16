@@ -8,8 +8,9 @@ SCREEN_WIDTH = 1000
 SCREEN_HEIGHT = 700
 FRAME_RATE = 100
 
-immortal = False
+immortal = True
 dead = False
+victorywave = 0
 
 pygame.init()
 
@@ -32,6 +33,9 @@ speedfade = pygame.transform.scale(og_speedfade, (SCREEN_WIDTH, 70))
 youdied = pygame.image.load("assets/youdied.png")
 youdiedscaled = pygame.transform.scale(youdied, (SCREEN_WIDTH, SCREEN_HEIGHT))
 
+victory = pygame.image.load("assets/victory.png")
+victoryscaled = pygame.transform.scale(victory, (960, 540))
+
 # create sprite groups
 platforms = pygame.sprite.Group()
 balls = pygame.sprite.Group()
@@ -47,7 +51,7 @@ def addenemy(x, y, size):
 def spawnenemies(count, size, xspacing, yspacing):
     enemyxspacing = xspacing + size
     enemyyspacing = yspacing + size
-    enemycontainer = SCREEN_WIDTH - size
+    enemycontainer = SCREEN_WIDTH - (2*size)
     for i in range(count):
         x = ((enemyxspacing)*i) % enemycontainer
         y = (enemyyspacing)*(1 + floor((enemyxspacing)*i/enemycontainer))
@@ -71,7 +75,7 @@ class Platform(pygame.sprite.Sprite):
         self.width = self.defaultw
         self.activeheight = round(self.width/92*9)
 
-        # image size 92 x 9#
+        # image size 92 x 9
         # platform width 78 (centered)
 
 
@@ -245,14 +249,9 @@ class Ball(pygame.sprite.Sprite):
 
     def horizontalbounce(self):
         self.angle = (180 - self.angle) + 180
-    
+
     def multiball(self):
         self.selfspawnballs(2, self.rect.x, self.rect.y, self.size, 5, randrange(0, 900)/10+45)
-
-    def correctangles(self):
-        self.angle = self.angle % 360
-        if round(self.angle, 3) % 90 == 0:
-            self.angle += 5
 
     def bounceonedges(self):
         if ((self.rect.x + self.size) >= SCREEN_WIDTH):
@@ -260,13 +259,12 @@ class Ball(pygame.sprite.Sprite):
             self.verticalbounce()
         elif ((self.rect.x) <= 0):
             self.rect.x = 1
-            self.verticalbounce()
+            if 90 <= (self.angle % 360) <= 270:
+                self.verticalbounce()
         if ((self.rect.y) < 0):
             self.rect.y = 1
-            self.horizontalbounce()
-            if 0 >= self.angle >= 360:
-                print(ball)
-
+            if 0 <= (self.angle % 360) <= 180:
+                self.horizontalbounce()
 
     def updatepowers(self):
         if self.firecooldown > 0:
@@ -278,17 +276,16 @@ class Ball(pygame.sprite.Sprite):
     def collidewplatform(self, platform):
         if pygame.sprite.collide_rect(self, platform):
 
-            if platform.rect.top < (self.rect.bottom - self.gety(self.angle)):
+            if platform.rect.top < (self.rect.bottom - self.gety(self.angle) - 1):
                 self.verticalbounce()
             else:
                 self.horizontalbounce()
 
-
             ballpospercent = ((self.rect.centerx - platform.rect.x)/platform.rect.width)*100
-            self.angle -= (ballpospercent - 50)/3 % 360
+            self.angle -= (ballpospercent - 50)/3 - 360
 
     def collidewenemies(self, enemies, Powerup):
-        
+
         enemies_hit = pygame.sprite.spritecollide(self, enemies, True)
 
         for enemy in enemies_hit:
@@ -341,8 +338,6 @@ class Ball(pygame.sprite.Sprite):
             self.collidewenemies(enemies, Powerup)
             splat.play()
 
-        self.correctangles()
-
 class Enemy(pygame.sprite.Sprite):
 
     def __init__(self, x, y, size):
@@ -359,12 +354,8 @@ class Enemy(pygame.sprite.Sprite):
         self.realy = y
         self.rect.x = int(self.realx)
         self.rect.y = int(self.realy)
-    
-    def move(self, xchange, ychange):
-        self.realx += xchange
-        self.realy += ychange
-        self.rect.x = int(self.realx)
-        self.rect.y = int(self.realy)
+
+        self.movecycle = 0
 
     def shoot(self, platform):
         xdiff = platform.rect.centerx - self.rect.x
@@ -392,8 +383,11 @@ class Enemy(pygame.sprite.Sprite):
         bullets.add(Bullet(self.rect.centerx, self.rect.bottom, x*b, b, angle))
 
     def update(self, platform):
-        if random() > 0.9996:
+        shootprobability = 1/200000*len(enemies)
+        if random() < shootprobability:
             self.shoot(platform)
+        self.rect.x = self.realx + self.size + 20*sin(self.movecycle)
+        self.movecycle += 0.03
 
 class Bullet(pygame.sprite.Sprite):
     def __init__(self, xcenter, y, xchange, ychange, angle):
@@ -481,18 +475,18 @@ class Powerup(pygame.sprite.Sprite):
         if self.power == 1:
             for platform in platforms:
                 platform.lenset(platform.rect.w + 75)
-                platform.growcooldown = 2000
+                platform.growcooldown = 150
         elif self.power == 2:
             for platform in platforms:
                 platform.maxspd = 10
                 platform.accel = 1
-                platform.speedcooldown = 2000
+                platform.speedcooldown = 1500
         elif self.power == 3:
             for ball in balls:
                 ball.multiball()
         elif self.power == 4:
             for ball in balls:
-                ball.firecooldown = 800
+                ball.firecooldown = 400
 
     def update(self, platforms, balls):
         self.move(0, 2)
@@ -538,9 +532,9 @@ class Bloodsplatter(pygame.sprite.Sprite):
 platform = Platform(500, 630)
 platforms.add(platform)
 
-spawnenemies(48, 50, 10, 5)
+spawnenemies(60, 50, 10, 5)
 
-ballcount = 1
+ballcount = 30
 ballsize = 30
 ballspawny = 630 - (ballsize/2)
 spawnballs(ballcount, platform.rect.centerx, ballspawny, ballsize, 0, randrange(0, 900)/10+45)
@@ -598,7 +592,14 @@ while True:
     bullets.draw(screen)
     blood.draw(screen)
 
-    if dead:
+    if dead and not len(enemies) < 1:
         screen.blit(youdiedscaled, (0, 0))
+
+    if len(enemies) < 1:
+        vicy = sin(victorywave)
+        screen.blit(victoryscaled, (20, vicy*100 + 80))
+        immortal = True
+        victorywave += 0.03
+
     pygame.display.flip()  # Pygame uses a double-buffer, without this we see half-completed frames
     clock.tick(FRAME_RATE)  # Pause the clock to always maintain FRAME_RATE frames per second
