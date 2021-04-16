@@ -8,9 +8,14 @@ SCREEN_WIDTH = 1000
 SCREEN_HEIGHT = 700
 FRAME_RATE = 100
 
-immortal = True
+lives = 3
+immortal = False
 dead = False
 victorywave = 0
+
+ballcount = 1
+ballsize = 30
+ballspawny = 630 - (ballsize/2)
 
 pygame.init()
 
@@ -33,8 +38,17 @@ speedfade = pygame.transform.scale(og_speedfade, (SCREEN_WIDTH, 70))
 youdied = pygame.image.load("assets/youdied.png")
 youdiedscaled = pygame.transform.scale(youdied, (SCREEN_WIDTH, SCREEN_HEIGHT))
 
+youlose = pygame.image.load("assets/youlose.jpg")
+youlosescaled = pygame.transform.scale(youlose, (SCREEN_WIDTH, SCREEN_HEIGHT))
+
+loading = pygame.image.load("assets/loading.gif")
+loadingscaled = pygame.transform.scale(loading, (SCREEN_WIDTH, SCREEN_HEIGHT))
+
 victory = pygame.image.load("assets/victory.png")
 victoryscaled = pygame.transform.scale(victory, (960, 540))
+
+heart = pygame.image.load("assets/heart.png")
+heartscaled = pygame.transform.scale(heart, (30, 30))
 
 # create sprite groups
 platforms = pygame.sprite.Group()
@@ -184,9 +198,9 @@ class Platform(pygame.sprite.Sprite):
     def update(self):
 
         self.checkcooldowns()
-        
+
         keys_pressed = pygame.key.get_pressed()
-        
+
         self.runmovement()
 
         self.setblasters()
@@ -213,7 +227,7 @@ class Ball(pygame.sprite.Sprite):
         self.angle = randrange(0, 900)/10+45
 
         self.firecooldown = 0
-    
+
     def move(self, xchange, ychange):
         self.realx += xchange
         self.realy += ychange
@@ -383,7 +397,7 @@ class Enemy(pygame.sprite.Sprite):
         bullets.add(Bullet(self.rect.centerx, self.rect.bottom, x*b, b, angle))
 
     def update(self, platform):
-        shootprobability = 1/200000*len(enemies)
+        shootprobability = 0.015/len(enemies)
         if random() < shootprobability:
             self.shoot(platform)
         self.rect.x = self.realx + self.size + 20*sin(self.movecycle)
@@ -528,78 +542,116 @@ class Bloodsplatter(pygame.sprite.Sprite):
         if self.rect.w <= 0 or self.rect.h <= 0:
             blood.remove(self)
 
-# create starting objects
-platform = Platform(500, 630)
-platforms.add(platform)
-
-spawnenemies(60, 50, 10, 5)
-
-ballcount = 30
-ballsize = 30
-ballspawny = 630 - (ballsize/2)
-spawnballs(ballcount, platform.rect.centerx, ballspawny, ballsize, 0, randrange(0, 900)/10+45)
+maingame = True
 
 # main game loop
 while True:
-    """
-    EVENTS section - how the code reacts when users do things
-    """
+
     for event in pygame.event.get():
         if event.type == pygame.QUIT:  # when user clicks the 'x' on the window, close the game
             pygame.quit()
             sys.exit()
 
-    # get user inputs
-    keys_pressed = pygame.key.get_pressed()
-    mouse_pos = pygame.mouse.get_pos()
-    mousex = mouse_pos[0]
-    mousey = mouse_pos[1]
+
     mouse_buttons = pygame.mouse.get_pressed()
 
-    # respawn button
-    if dead and (184 <= mousex <= 820) and (360 <= mousey <= 424) and mouse_buttons[0]:
-        platform.reset()
-        click.play()
+    if maingame:
+        # create starting objects
+        platform = Platform(500, 630)
+        platforms.add(platform)
+        spawnenemies(60, 50, 10, 5)
         spawnballs(ballcount, platform.rect.centerx, ballspawny, ballsize, 0, randrange(0, 900)/10+45)
+        lives = 3
         dead = False
 
+    while maingame:
+        """
+        EVENTS section - how the code reacts when users do things
+        """
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:  # when user clicks the 'x' on the window, close the game
+                pygame.quit()
+                sys.exit()
 
-    """
-    UPDATE section - manipulate everything on the screen
-    """
+        # get user inputs
+        keys_pressed = pygame.key.get_pressed()
+        mouse_pos = pygame.mouse.get_pos()
+        mousex = mouse_pos[0]
+        mousey = mouse_pos[1]
+        mouse_buttons = pygame.mouse.get_pressed()
 
-    platform.update()
-    enemies.update(platform)
-    balls.update(platform, enemies, Powerup, immortal)
-    powerups.update(platforms, balls)
-    bullets.update(platform, immortal)
-    blood.update()
-    if len(balls) < 1 or platform.rect.w < 40:
-        dead = True
+        # respawn button
+        if dead and (((184 <= mousex <= 820) and (360 <= mousey <= 424) and mouse_buttons[0]) or keys_pressed[pygame.K_r]):
+            balls.empty()
+            platform.reset()
+            click.play()
+            spawnballs(ballcount, platform.rect.centerx, ballspawny, ballsize, 0, randrange(0, 900)/10+45)
+            dead = False
 
-    """
-    DRAW section - make everything show up on screen
-    """
-    screen.blit(bg, (0, 0))
 
-    if platform.speedcooldown > 0:
-        screen.blit(speedfade, (0, 605))
+        """
+        UPDATE section - manipulate everything on the screen
+        """
 
-    enemies.draw(screen)
-    balls.draw(screen)
-    platforms.draw(screen)
-    powerups.draw(screen)
-    bullets.draw(screen)
-    blood.draw(screen)
+        platform.update()
+        enemies.update(platform)
+        balls.update(platform, enemies, Powerup, immortal)
+        powerups.update(platforms, balls)
+        bullets.update(platform, immortal)
+        blood.update()
+        if len(balls) < 1 or platform.rect.w < 40:
+            if not dead:
+                if lives > 1:
+                    lives -= 1
+                else:
+                    maingame = False
+                    platforms.empty()
+                    balls.empty()
+                    enemies.empty()
+                    bullets.empty()
+                    blood.empty()
+                    powerups.empty()
+            dead = True
 
-    if dead and not len(enemies) < 1:
-        screen.blit(youdiedscaled, (0, 0))
+        if maingame:
+            """
+            DRAW section - make everything show up on screen
+            """
+            screen.blit(bg, (0, 0))
 
-    if len(enemies) < 1:
-        vicy = sin(victorywave)
-        screen.blit(victoryscaled, (20, vicy*100 + 80))
-        immortal = True
-        victorywave += 0.03
+            if platform.speedcooldown > 0:
+                screen.blit(speedfade, (0, 605))
 
-    pygame.display.flip()  # Pygame uses a double-buffer, without this we see half-completed frames
-    clock.tick(FRAME_RATE)  # Pause the clock to always maintain FRAME_RATE frames per second
+            enemies.draw(screen)
+            balls.draw(screen)
+            platforms.draw(screen)
+            powerups.draw(screen)
+            bullets.draw(screen)
+            blood.draw(screen)
+
+            if dead and not len(enemies) < 1:
+                screen.blit(youdiedscaled, (0, 0))
+
+            if len(enemies) < 1:
+                vicy = sin(victorywave)
+                screen.blit(victoryscaled, (20, vicy*100 + 80))
+                immortal = True
+                victorywave += 0.03
+
+            for i in range(lives):
+                screen.blit(heartscaled, (10+30*i, 660))
+
+            pygame.display.flip()  # Pygame uses a double-buffer, without this we see half-completed frames
+
+            clock.tick(FRAME_RATE)  # Pause the clock to always maintain FRAME_RATE frames per second
+
+    # player has died
+
+    screen.blit(youlosescaled, (0, 0))
+
+    if mouse_buttons[0]:
+        maingame = True
+        click.play()
+        screen.blit(loadingscaled, (0, 0))
+
+    pygame.display.flip()
