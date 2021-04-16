@@ -249,7 +249,7 @@ class Ball(pygame.sprite.Sprite):
 
     def horizontalbounce(self):
         self.angle = (180 - self.angle) + 180
-    
+
     def multiball(self):
         self.selfspawnballs(2, self.rect.x, self.rect.y, self.size, 5, randrange(0, 900)/10+45)
 
@@ -259,13 +259,12 @@ class Ball(pygame.sprite.Sprite):
             self.verticalbounce()
         elif ((self.rect.x) <= 0):
             self.rect.x = 1
-            self.verticalbounce()
+            if 90 <= (self.angle % 360) <= 270:
+                self.verticalbounce()
         if ((self.rect.y) < 0):
             self.rect.y = 1
-            self.horizontalbounce()
-            if 0 >= self.angle >= 360:
-                print(ball)
-
+            if 0 <= (self.angle % 360) <= 180:
+                self.horizontalbounce()
 
     def updatepowers(self):
         if self.firecooldown > 0:
@@ -277,17 +276,16 @@ class Ball(pygame.sprite.Sprite):
     def collidewplatform(self, platform):
         if pygame.sprite.collide_rect(self, platform):
 
-            if platform.rect.top < (self.rect.bottom - self.gety(self.angle)):
+            if platform.rect.top < (self.rect.bottom - self.gety(self.angle) - 1):
                 self.verticalbounce()
             else:
                 self.horizontalbounce()
 
-
             ballpospercent = ((self.rect.centerx - platform.rect.x)/platform.rect.width)*100
-            self.angle -= (ballpospercent - 50)/3
+            self.angle -= (ballpospercent - 50)/3 - 360
 
     def collidewenemies(self, enemies, Powerup):
-        
+
         enemies_hit = pygame.sprite.spritecollide(self, enemies, True)
 
         for enemy in enemies_hit:
@@ -339,7 +337,6 @@ class Ball(pygame.sprite.Sprite):
         if self.velocity != 0 and pygame.sprite.spritecollide(self, enemies, False):
             self.collidewenemies(enemies, Powerup)
             splat.play()
-        print(self.angle)
 
 class Enemy(pygame.sprite.Sprite):
 
@@ -537,7 +534,7 @@ platforms.add(platform)
 
 spawnenemies(60, 50, 10, 5)
 
-ballcount = 1
+ballcount = 30
 ballsize = 30
 ballspawny = 630 - (ballsize/2)
 spawnballs(ballcount, platform.rect.centerx, ballspawny, ballsize, 0, randrange(0, 900)/10+45)
