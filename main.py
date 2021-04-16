@@ -3,6 +3,7 @@ import sys
 import pygame
 from math import floor, sin, cos, atan, sqrt, degrees, radians
 from random import randrange, random, randint
+from time import sleep
 
 SCREEN_WIDTH = 1000
 SCREEN_HEIGHT = 700
@@ -44,8 +45,14 @@ youlosescaled = pygame.transform.scale(youlose, (SCREEN_WIDTH, SCREEN_HEIGHT))
 loading = pygame.image.load("assets/loading.gif")
 loadingscaled = pygame.transform.scale(loading, (SCREEN_WIDTH, SCREEN_HEIGHT))
 
+title = pygame.image.load("assets/title.png")
+titlescaled = pygame.transform.scale(title, (SCREEN_WIDTH, SCREEN_HEIGHT))
+
 victory = pygame.image.load("assets/victory.png")
 victoryscaled = pygame.transform.scale(victory, (960, 540))
+
+instructions = pygame.image.load("assets/instructions.png")
+instructionsscaled = pygame.transform.scale(instructions, (SCREEN_WIDTH, SCREEN_HEIGHT))
 
 heart = pygame.image.load("assets/heart.png")
 heartscaled = pygame.transform.scale(heart, (30, 30))
@@ -431,7 +438,8 @@ class Bullet(pygame.sprite.Sprite):
             bullets.remove(self)
 
         if pygame.sprite.spritecollide(platform, bullets, True) and not immortal:
-            platform.lenset(platform.rect.w - 20)
+            if not dead:
+                platform.lenset(platform.rect.w - 20)
 
 class Powerup(pygame.sprite.Sprite):
 
@@ -542,7 +550,12 @@ class Bloodsplatter(pygame.sprite.Sprite):
         if self.rect.w <= 0 or self.rect.h <= 0:
             blood.remove(self)
 
-maingame = True
+
+titlescreen = True
+losescreen = False
+maingame = False
+instructions = False
+youlose = False
 
 # main game loop
 while True:
@@ -552,8 +565,29 @@ while True:
             pygame.quit()
             sys.exit()
 
-
+    keys_pressed = pygame.key.get_pressed()
     mouse_buttons = pygame.mouse.get_pressed()
+
+    if titlescreen:
+        screen.blit(titlescaled, (0, 0))
+        if keys_pressed[pygame.K_s]:
+            screen.blit(loadingscaled, (0, 0))
+            maingame = True
+        if keys_pressed[pygame.K_i]:
+            maingame = False
+            titlescreen = False
+            instructions = True
+            title = False
+            youlose = False
+
+    if instructions:
+        screen.blit(instructionsscaled, (0, 0))
+        if keys_pressed[pygame.K_ESCAPE]:
+            instructions = False
+            titlescreen = True
+            maingame = False
+            youlose = False
+
 
     if maingame:
         # create starting objects
@@ -605,6 +639,8 @@ while True:
                     lives -= 1
                 else:
                     maingame = False
+                    titlescreen = False
+                    losescreen = True
                     platforms.empty()
                     balls.empty()
                     enemies.empty()
@@ -647,11 +683,15 @@ while True:
 
     # player has died
 
-    screen.blit(youlosescaled, (0, 0))
+    if losescreen:
+        screen.blit(youlosescaled, (0, 0))
 
-    if mouse_buttons[0]:
-        maingame = True
-        click.play()
-        screen.blit(loadingscaled, (0, 0))
+        if mouse_buttons:
+            instructions = False
+            titlescreen = True
+            maingame = False
+            youlose = False
+            click.play()
+            screen.blit(loadingscaled, (0, 0))
 
     pygame.display.flip()
