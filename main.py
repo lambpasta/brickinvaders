@@ -690,7 +690,7 @@ while True:
             instructions = False
             titlescreen = True
             maingame = False
-            youlose = False
+            losescreen = False
             click.play()
             screen.blit(loadingscaled, (0, 0))
 
