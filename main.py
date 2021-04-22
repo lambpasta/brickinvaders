@@ -26,6 +26,8 @@ screen.set_alpha(0)  # make alpha bits transparent
 clock = pygame.time.Clock()
 
 # load & scale assets
+neogauge = pygame.mixer.music.load('assets/neogauge.mp3')
+
 click = pygame.mixer.Sound('assets/click.ogg')
 
 splat = pygame.mixer.Sound('assets/splat.wav')
@@ -86,7 +88,7 @@ def splatter(count, centerx, centery):
     for i in range(count):
         blood.add(Bloodsplatter(centerx, centery))
 
-# declare all classes (this is long - ends at line 537)
+# declare all classes (this is long - ends at line 554)
 class Platform(pygame.sprite.Sprite):
 
     def __init__(self, xcenter, y):
@@ -557,9 +559,16 @@ maingame = False
 instructions = False
 youlose = False
 
+
+
+pygame.mixer.music.play(-1, 0, 0)
+
+
 # main game loop
 while True:
 
+
+    # get user inputs
     for event in pygame.event.get():
         if event.type == pygame.QUIT:  # when user clicks the 'x' on the window, close the game
             pygame.quit()
@@ -567,6 +576,7 @@ while True:
 
     keys_pressed = pygame.key.get_pressed()
     mouse_buttons = pygame.mouse.get_pressed()
+
 
     if titlescreen:
         screen.blit(titlescaled, (0, 0))
@@ -580,6 +590,7 @@ while True:
             title = False
             youlose = False
 
+
     if instructions:
         screen.blit(instructionsscaled, (0, 0))
         if keys_pressed[pygame.K_ESCAPE]:
@@ -587,6 +598,18 @@ while True:
             titlescreen = True
             maingame = False
             youlose = False
+
+    
+    if losescreen:
+        screen.blit(youlosescaled, (0, 0))
+
+        if mouse_buttons[0]:
+            instructions = False
+            titlescreen = True
+            maingame = False
+            losescreen = False
+            click.play()
+            screen.blit(loadingscaled, (0, 0))
 
 
     if maingame:
@@ -621,6 +644,16 @@ while True:
             click.play()
             spawnballs(ballcount, platform.rect.centerx, ballspawny, ballsize, 0, randrange(0, 900)/10+45)
             dead = False
+        if dead and (((184 <= mousex <= 820) and (437 <= mousey <= 500) and mouse_buttons[0]) or keys_pressed[pygame.K_ESCAPE]):
+            maingame = False
+            titlescreen = True
+            losescreen = False
+            platforms.empty()
+            balls.empty()
+            enemies.empty()
+            bullets.empty()
+            blood.empty()
+            powerups.empty()
 
 
         """
@@ -680,18 +713,5 @@ while True:
             pygame.display.flip()  # Pygame uses a double-buffer, without this we see half-completed frames
 
             clock.tick(FRAME_RATE)  # Pause the clock to always maintain FRAME_RATE frames per second
-
-    # player has died
-
-    if losescreen:
-        screen.blit(youlosescaled, (0, 0))
-
-        if mouse_buttons:
-            instructions = False
-            titlescreen = True
-            maingame = False
-            losescreen = False
-            click.play()
-            screen.blit(loadingscaled, (0, 0))
 
     pygame.display.flip()
