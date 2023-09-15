@@ -1,2 +1,2 @@
 # pygame-game
-blockbuster inspired game
+atari breakout inspired game
